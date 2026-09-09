@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { suspendAccount, reactivateAccount, adminDeleteAccount } from './actions';
 
@@ -43,9 +45,12 @@ const STATUS_BADGE: Record<string, string> = {
 // أو حذف أي حساب مباشرة (بدل الاقتصار على شاشات منفصلة لكل حالة).
 export default function RegistrantsList() {
   const supabase = createClient();
+  const searchParams = useSearchParams();
+  const statusFilter = searchParams.get('status');
   const [isAdmin, setIsAdmin] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const visibleRows = statusFilter ? rows.filter((r) => r.status === statusFilter) : rows;
 
   async function load() {
     const {
@@ -114,7 +119,17 @@ export default function RegistrantsList() {
 
   return (
     <div className="mt-8">
-      <h2 className="mb-3 text-sm font-bold text-slate-700">جميع المسجَّلين</h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-bold text-slate-700">جميع المسجَّلين</h2>
+        {statusFilter && (
+          <p className="text-xs text-slate-500">
+            مصفّى حسب: <strong>{STATUS_LABELS[statusFilter] ?? statusFilter}</strong> —{' '}
+            <Link href="/admin" className="font-semibold text-primary hover:underline">
+              عرض الكل
+            </Link>
+          </p>
+        )}
+      </div>
 
       {!isAdmin && (
         <p className="mb-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
@@ -133,14 +148,14 @@ export default function RegistrantsList() {
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {visibleRows.length === 0 ? (
               <tr>
                 <td colSpan={4} className="p-6 text-center text-slate-400">
-                  لا يوجد مسجَّلون بعد.
+                  {statusFilter ? 'لا يوجد مسجَّلون بهذه الحالة.' : 'لا يوجد مسجَّلون بعد.'}
                 </td>
               </tr>
             ) : (
-              rows.map((r) => (
+              visibleRows.map((r) => (
                 <tr key={r.id} className="border-t border-slate-100">
                   <td className="px-4 py-2.5">{r.full_name_legal ?? '—'}</td>
                   <td className="px-4 py-2.5 text-xs text-slate-500">
