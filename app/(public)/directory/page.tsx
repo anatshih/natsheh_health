@@ -1,4 +1,7 @@
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import DirectoryAvatar from '@/components/DirectoryAvatar';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 type DirectoryRow = {
   profile_id: string;
@@ -74,23 +77,56 @@ export default async function DirectoryPage({
         {results?.map((row: DirectoryRow) => (
           <article
             key={row.profile_id}
-            className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-5"
+            className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5"
           >
-            <h2 className="font-heading text-base font-bold">{row.display_name}</h2>
-            <p className="text-sm text-slate-600">
-              {[row.specialty_category, row.specialty, row.sub_specialty]
-                .filter(Boolean)
-                .join(' — ')}
-            </p>
-            <p className="text-xs text-slate-500">
-              {[row.residence_city, row.residence_country].filter(Boolean).join('، ')}
-            </p>
+            <div className="flex items-center gap-3">
+              <DirectoryAvatar photoUrl={row.photo_url} name={row.display_name} size={52} />
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h2 className="font-heading text-base font-bold">{row.display_name}</h2>
+                  <VerifiedBadge />
+                </div>
+                {(row.residence_city || row.residence_country) && (
+                  <p className="flex items-center gap-1 text-xs text-slate-500">
+                    <PinIcon />
+                    {[row.residence_city, row.residence_country].filter(Boolean).join('، ')}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {row.specialty && (
+              <span className="w-fit rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary">
+                {row.specialty}
+              </span>
+            )}
+
             {row.years_experience != null && (
               <p className="text-xs text-slate-500">خبرة {row.years_experience} سنة</p>
             )}
+
+            <Link
+              href={`/directory/${row.profile_id}`}
+              className="mt-1 rounded-lg border border-primary py-2 text-center text-xs font-semibold text-primary hover:bg-primary-soft"
+            >
+              عرض الملف المهني
+            </Link>
           </article>
         ))}
       </div>
     </main>
+  );
+}
+
+function PinIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 21s7-6.3 7-11.5A7 7 0 0 0 5 9.5C5 14.7 12 21 12 21Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <circle cx="12" cy="9.5" r="2.3" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
   );
 }
