@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import LogoutButton from '@/components/LogoutButton';
@@ -26,9 +27,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen bg-slate-100">
       <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
-        <h1 className="font-heading text-lg font-bold text-primary">
-          لوحة إدارة الدليل الصحي
-        </h1>
+        <div className="flex items-center gap-6">
+          <h1 className="font-heading text-lg font-bold text-primary">
+            لوحة إدارة الدليل الصحي
+          </h1>
+          <nav className="flex gap-4 text-sm font-semibold text-slate-600">
+            <Link href="/admin" className="hover:text-primary">
+              لوحة المؤشرات
+            </Link>
+            <Link href="/admin/applications" className="hover:text-primary">
+              طلبات الانضمام
+            </Link>
+          </nav>
+        </div>
         <div className="flex items-center gap-4">
           <span className="text-xs text-slate-500">دور الحساب: {appUser.role}</span>
           <LogoutButton />
