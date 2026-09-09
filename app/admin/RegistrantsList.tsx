@@ -156,6 +156,9 @@ export default function RegistrantsList() {
                   </td>
                   {isAdmin && (
                     <td className="px-4 py-2.5">
+                      {r.status === 'archived' ? (
+                        <span className="text-xs text-slate-400">لا يوجد إجراء (تم الحذف)</span>
+                      ) : (
                       <div className="flex gap-3">
                         {r.status === 'suspended' ? (
                           <button
@@ -182,6 +185,7 @@ export default function RegistrantsList() {
                           حذف
                         </button>
                       </div>
+                      )}
                     </td>
                   )}
                 </tr>
