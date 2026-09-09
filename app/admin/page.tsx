@@ -7,7 +7,7 @@ export default async function AdminDashboardPage() {
 
   const [{ count: totalUsers }, { count: published }, { count: pending }] =
     await Promise.all([
-      supabase.from('app_users').select('*', { count: 'exact', head: true }),
+      supabase.from('app_users').select('*', { count: 'exact', head: true }).neq('status', 'archived'),
       supabase
         .from('app_users')
         .select('*', { count: 'exact', head: true })

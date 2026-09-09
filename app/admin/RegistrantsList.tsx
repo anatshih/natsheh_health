@@ -61,6 +61,7 @@ export default function RegistrantsList() {
     const { data: appUsers } = await supabase
       .from('app_users')
       .select('id, status, created_at')
+      .neq('status', 'archived')
       .order('created_at', { ascending: false });
 
     const ids = (appUsers ?? []).map((u) => u.id);
