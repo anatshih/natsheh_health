@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import PhotoUpload from '@/components/PhotoUpload';
@@ -451,7 +452,12 @@ export default function JoinPage() {
               checked={form.agreePrivacy}
               onChange={(e) => update('agreePrivacy', e.target.checked)}
             />
-            <span>أوافق على سياسة الخصوصية وشروط استخدام الدليل</span>
+            <span>
+              أوافق على{' '}
+              <Link href="/privacy" target="_blank" className="text-primary underline">
+                سياسة الخصوصية وشروط استخدام الدليل
+              </Link>
+            </span>
           </label>
 
           <button
