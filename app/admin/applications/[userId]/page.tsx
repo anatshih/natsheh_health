@@ -103,6 +103,11 @@ export default async function ApplicationDetailPage({
         .order('created_at', { ascending: false })
     : { data: [] };
 
+  // تنبيه تشابه تقريبي (القسم 22): لا يمنع أي إجراء، فقط يُطلع المراجع.
+  const { data: similarMatches } = await supabase.rpc('find_similar_applicants', {
+    p_user_id: userId,
+  });
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
@@ -111,6 +116,33 @@ export default async function ApplicationDetailPage({
           {STATUS_LABELS[appUser.status] ?? appUser.status}
         </span>
       </div>
+
+      {similarMatches && similarMatches.length > 0 && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-5">
+          <h3 className="mb-3 text-sm font-bold text-amber-900">
+            ⚠ تنبيه تشابه محتمل — راجع قبل الاعتماد (القسم 22)
+          </h3>
+          <p className="mb-3 text-xs text-amber-800">
+            لا يعني هذا بالضرورة تكرارًا فعليًا؛ القرار يبقى لك. لا يحدث أي دمج أو حذف تلقائي.
+          </p>
+          <div className="space-y-2">
+            {similarMatches.map((m: any) => (
+              <div
+                key={m.other_user_id}
+                className="rounded-lg border border-amber-200 bg-white p-3 text-sm"
+              >
+                <p className="font-semibold">
+                  {m.full_name_legal}{' '}
+                  <span className="font-normal text-amber-700">— {m.match_reason}</span>
+                </p>
+                <p className="text-xs text-slate-500">
+                  الهاتف: {m.phone} · الواتساب: {m.whatsapp} · الحالة: {STATUS_LABELS[m.status] ?? m.status}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Section title="بيانات الهوية">
         <Row label="الاسم الكامل حسب الهوية" value={identity?.full_name_legal} />
