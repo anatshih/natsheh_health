@@ -50,8 +50,6 @@ type FormState = {
   workCountryId: string;
   workCityId: string;
   yearsExperience: string;
-  licenseNumber: string;
-  licenseAuthority: string;
   bio: string;
 
   futureWillingness: string;
@@ -89,8 +87,6 @@ const initialForm: FormState = {
   workCountryId: '',
   workCityId: '',
   yearsExperience: '',
-  licenseNumber: '',
-  licenseAuthority: '',
   bio: '',
 
   futureWillingness: '',
@@ -265,8 +261,6 @@ export default function JoinPage() {
         work_country_id: form.workCountryId || null,
         work_city_id: form.workCityId || null,
         years_experience: form.yearsExperience ? Number(form.yearsExperience) : null,
-        license_number: form.licenseNumber || null,
-        license_authority: form.licenseAuthority || null,
       });
 
       if (profError) {
@@ -511,9 +505,6 @@ export default function JoinPage() {
             value={form.yearsExperience}
             onChange={(v) => update('yearsExperience', v)}
           />
-          <Field label="رقم الترخيص المهني" optional value={form.licenseNumber} onChange={(v) => update('licenseNumber', v)} />
-          <Field label="جهة الترخيص" optional value={form.licenseAuthority} onChange={(v) => update('licenseAuthority', v)} />
-
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-700">
               الصورة الشخصية <span className="font-normal text-slate-400">(اختياري)</span>

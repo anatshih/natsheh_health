@@ -256,8 +256,6 @@ export default function ProfilePage() {
             defaultValue={prof?.years_experience}
             optional
           />
-          <Field name="license_number" label="رقم الترخيص المهني" defaultValue={prof?.license_number} optional />
-          <Field name="license_authority" label="جهة الترخيص" defaultValue={prof?.license_authority} optional />
           <TextAreaField name="bio" label="النبذة المهنية" defaultValue={profile?.bio} />
         </Section>
 

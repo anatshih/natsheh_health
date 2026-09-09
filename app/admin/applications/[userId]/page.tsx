@@ -184,7 +184,6 @@ export default async function ApplicationDetailPage({
         <Row label="دولة العمل" value={specialtyLabels.workCountry} />
         <Row label="مدينة العمل" value={specialtyLabels.workCity} />
         <Row label="سنوات الخبرة" value={prof?.years_experience} />
-        <Row label="رقم الترخيص" value={prof?.license_number} />
       </Section>
 
       {reviews && reviews.length > 0 && (

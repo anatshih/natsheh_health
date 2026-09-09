@@ -10,8 +10,6 @@ const PROFESSIONAL_FIELDS = new Set([
   'sub_specialty_id',
   'qualification',
   'employer',
-  'license_number',
-  'license_authority',
 ]);
 
 async function getReviewer(supabase: Awaited<ReturnType<typeof createClient>>) {

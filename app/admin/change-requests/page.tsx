@@ -8,8 +8,6 @@ const FIELD_LABELS: Record<string, string> = {
   sub_specialty_id: 'التخصص الدقيق',
   qualification: 'المؤهل العلمي',
   employer: 'جهة العمل',
-  license_number: 'رقم الترخيص',
-  license_authority: 'جهة الترخيص',
 };
 
 const ID_FIELDS = new Set(['specialty_category_id', 'specialty_id', 'sub_specialty_id']);
