@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import DirectoryAvatar from '@/components/DirectoryAvatar';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import AnimatedNumber from '@/components/AnimatedNumber';
+import { loadDirectoryStats } from '@/lib/directoryStats';
 
 type DirectoryRow = {
   profile_id: string;
@@ -42,24 +43,10 @@ export default async function DirectoryPage({
     query = query.or(`display_name.ilike.%${q}%,specialty.ilike.%${q}%`);
   }
 
-  const [{ data: results, error }, { data: allRows }] = await Promise.all([
-    query,
-    // مجموعة كاملة غير مفلترة لحساب الإحصاءات ووسوم التخصصات الأكثر انتشارًا
-    supabase.from('directory_public').select('specialty, residence_country'),
-  ]);
+  const [{ data: results, error }, stats] = await Promise.all([query, loadDirectoryStats()]);
 
-  const totalCount = allRows?.length ?? 0;
-  const countryCount = new Set((allRows ?? []).map((r) => r.residence_country).filter(Boolean)).size;
-
-  const specialtyCounts = new Map<string, number>();
-  for (const r of allRows ?? []) {
-    if (!r.specialty) continue;
-    specialtyCounts.set(r.specialty, (specialtyCounts.get(r.specialty) ?? 0) + 1);
-  }
-  const specialtyCount = specialtyCounts.size;
-  const topSpecialties = [...specialtyCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6);
+  const { totalCount, countryCount, specialtyCount, topSpecialties: allTopSpecialties } = stats;
+  const topSpecialties = allTopSpecialties.slice(0, 6);
 
   const now = Date.now();
   const isNew = (dateStr: string | null) =>
@@ -72,11 +59,14 @@ export default async function DirectoryPage({
         الكفاءات المعتمدة والمنشورة فقط من أبناء وبنات عائلة النتشة.
       </p>
 
-      <div className="mb-8 grid grid-cols-3 gap-3 sm:max-w-md">
+      <div className="mb-2 grid grid-cols-3 gap-3 sm:max-w-md">
         <StatTile value={totalCount} label="كفاءة موثّقة" />
         <StatTile value={specialtyCount} label="تخصصًا" />
         <StatTile value={countryCount} label="دولة" />
       </div>
+      <Link href="/stats" className="mb-6 inline-block text-xs font-semibold text-primary hover:underline">
+        عرض كل الإحصاءات ›
+      </Link>
 
       <form className="mb-5 flex max-w-md gap-2">
         <input

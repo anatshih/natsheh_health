@@ -46,6 +46,9 @@ export default async function SiteHeader() {
           <Link href="/directory" className="hidden hover:text-primary sm:inline">
             دليل الكفاءات
           </Link>
+          <Link href="/stats" className="hidden hover:text-primary sm:inline">
+            الإحصاءات
+          </Link>
           <Link href="/join" className="hidden hover:text-primary sm:inline">
             طلب انضمام
           </Link>

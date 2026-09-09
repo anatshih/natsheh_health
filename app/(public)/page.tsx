@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import WhatsAppShareButton from '@/components/WhatsAppShareButton';
 
 export default function HomePage() {
   return (
@@ -28,6 +29,11 @@ export default function HomePage() {
           طلب انضمام
         </Link>
       </div>
+
+      <WhatsAppShareButton
+        text="دليل الكفاءات الصحية لعائلة النتشة — تصفّح الأطباء والكفاءات الصحية في العائلة:"
+        className="mt-2 flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:border-primary hover:text-primary"
+      />
     </main>
   );
 }
