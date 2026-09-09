@@ -10,7 +10,7 @@ export async function addBranch(formData: FormData) {
   const name = (formData.get('name') as string)?.trim();
   if (!name) return;
   await supabase.from('family_branches').insert({ name });
-  revalidatePath('/admin/branches');
+  revalidatePath('/admin/settings/branches');
 }
 
 export async function renameBranch(formData: FormData) {
@@ -19,7 +19,7 @@ export async function renameBranch(formData: FormData) {
   const name = (formData.get('name') as string)?.trim();
   if (!id || !name) return;
   await supabase.from('family_branches').update({ name }).eq('id', id);
-  revalidatePath('/admin/branches');
+  revalidatePath('/admin/settings/branches');
 }
 
 export async function toggleBranch(formData: FormData) {
@@ -27,5 +27,5 @@ export async function toggleBranch(formData: FormData) {
   const id = formData.get('id') as string;
   const nextActive = formData.get('nextActive') === 'true';
   await supabase.from('family_branches').update({ is_active: nextActive }).eq('id', id);
-  revalidatePath('/admin/branches');
+  revalidatePath('/admin/settings/branches');
 }

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { addCountry, toggleCountry, addCity, toggleCity } from './actions';
 import ToggleSwitch from '@/components/ToggleSwitch';
+import SettingsTabs from '@/components/SettingsTabs';
 
 // إدارة الدول والمدن (القسم 54). لا حذف، فقط تفعيل/تعطيل.
 export default async function LocationsPage() {
@@ -20,7 +21,9 @@ export default async function LocationsPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-3xl">
+      <SettingsTabs active="locations" />
+      <div className="space-y-8">
       <h2 className="text-lg font-bold">إدارة الدول والمدن</h2>
 
       {!isAdmin && (
@@ -99,6 +102,7 @@ export default async function LocationsPage() {
             </button>
           </form>
         )}
+      </div>
       </div>
     </div>
   );

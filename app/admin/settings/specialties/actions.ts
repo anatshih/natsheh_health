@@ -8,7 +8,7 @@ export async function addCategory(formData: FormData) {
   const name = (formData.get('name') as string)?.trim();
   if (!name) return;
   await supabase.from('specialty_categories').insert({ name });
-  revalidatePath('/admin/specialties');
+  revalidatePath('/admin/settings/specialties');
 }
 
 export async function toggleCategory(formData: FormData) {
@@ -16,7 +16,7 @@ export async function toggleCategory(formData: FormData) {
   const id = formData.get('id') as string;
   const nextActive = formData.get('nextActive') === 'true';
   await supabase.from('specialty_categories').update({ is_active: nextActive }).eq('id', id);
-  revalidatePath('/admin/specialties');
+  revalidatePath('/admin/settings/specialties');
 }
 
 export async function addSpecialty(formData: FormData) {
@@ -26,7 +26,7 @@ export async function addSpecialty(formData: FormData) {
   const name = (formData.get('name') as string)?.trim();
   if (!category_id || !name) return;
   await supabase.from('specialties').insert({ category_id, parent_id, name });
-  revalidatePath('/admin/specialties');
+  revalidatePath('/admin/settings/specialties');
 }
 
 export async function toggleSpecialty(formData: FormData) {
@@ -34,5 +34,5 @@ export async function toggleSpecialty(formData: FormData) {
   const id = formData.get('id') as string;
   const nextActive = formData.get('nextActive') === 'true';
   await supabase.from('specialties').update({ is_active: nextActive }).eq('id', id);
-  revalidatePath('/admin/specialties');
+  revalidatePath('/admin/settings/specialties');
 }

@@ -44,14 +44,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin/change-requests" className="hover:text-primary">
               طلبات التعديل
             </Link>
-            <Link href="/admin/specialties" className="hover:text-primary">
-              التخصصات
-            </Link>
-            <Link href="/admin/branches" className="hover:text-primary">
-              الفروع
-            </Link>
-            <Link href="/admin/locations" className="hover:text-primary">
-              الدول والمدن
+            <Link href="/admin/settings" className="hover:text-primary">
+              ثوابت النظام
             </Link>
             <Link href="/admin/password-resets" className="hover:text-primary">
               استعادة الحسابات

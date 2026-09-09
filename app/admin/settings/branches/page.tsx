@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { addBranch, renameBranch, toggleBranch } from './actions';
 import ToggleSwitch from '@/components/ToggleSwitch';
+import SettingsTabs from '@/components/SettingsTabs';
 
 // إدارة الفخذ / الفرع العائلي (القسم 53): لا حذف، فقط تفعيل/تعطيل حفاظًا
 // على السجلات المرتبطة به.
@@ -21,7 +22,9 @@ export default async function BranchesPage() {
     .order('name');
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl">
+      <SettingsTabs active="branches" />
+      <div className="space-y-6">
       <h2 className="text-lg font-bold">إدارة الفروع / الأفخاذ العائلية</h2>
 
       {!isAdmin && (
@@ -73,6 +76,7 @@ export default async function BranchesPage() {
           </button>
         </form>
       )}
+      </div>
     </div>
   );
 }

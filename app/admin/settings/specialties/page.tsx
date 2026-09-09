@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { addCategory, toggleCategory, addSpecialty, toggleSpecialty } from './actions';
 import ToggleSwitch from '@/components/ToggleSwitch';
+import SettingsTabs from '@/components/SettingsTabs';
 
 type Row = { id: string; name: string; is_active: boolean; category_id?: string; parent_id?: string | null };
 
@@ -44,7 +45,9 @@ export default function SpecialtiesPage() {
   );
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-3xl">
+      <SettingsTabs active="specialties" />
+      <div className="space-y-8">
       <h2 className="text-lg font-bold">إدارة المجالات الصحية والتخصصات</h2>
 
       {!isAdmin && (
@@ -188,6 +191,7 @@ export default function SpecialtiesPage() {
             </button>
           </form>
         )}
+      </div>
       </div>
     </div>
   );
