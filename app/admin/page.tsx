@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import RegistrantsList from './RegistrantsList';
 
 // لوحة مؤشرات مبسطة (القسم 29). التوسع لاحقًا: طلبات الانضمام، التقارير، إلخ.
 export default async function AdminDashboardPage() {
@@ -24,15 +25,19 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-3">
-      {cards.map((c) => (
-        <div key={c.label} className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-sm text-slate-500">{c.label}</p>
-          <p className="mt-2 font-heading text-3xl font-extrabold text-primary">
-            {c.value}
-          </p>
-        </div>
-      ))}
+    <div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {cards.map((c) => (
+          <div key={c.label} className="rounded-xl border border-slate-200 bg-white p-5">
+            <p className="text-sm text-slate-500">{c.label}</p>
+            <p className="mt-2 font-heading text-3xl font-extrabold text-primary">
+              {c.value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <RegistrantsList />
     </div>
   );
 }
