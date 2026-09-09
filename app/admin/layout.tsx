@@ -47,6 +47,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin/locations" className="hover:text-primary">
               الدول والمدن
             </Link>
+            <Link href="/admin/password-resets" className="hover:text-primary">
+              استعادة الحسابات
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">
