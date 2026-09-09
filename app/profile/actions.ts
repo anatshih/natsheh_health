@@ -138,6 +138,23 @@ export async function updateProfile(formData: FormData) {
   revalidatePath('/profile');
 }
 
+// طلب حذف الحساب نهائيًا (القسم 38). يُخفي الملف فورًا (حالة "موقوف")، ويصل
+// الطلب للإدارة للتأكيد قبل أي حذف فعلي — تحديدًا لمنع حذف كيدي من حساب مخترق.
+export async function requestAccountDeletion() {
+  const { supabase, appUser } = await getCurrentAppUser();
+
+  await supabase.from('deletion_requests').insert({
+    user_id: appUser.id,
+    status: 'pending',
+    previous_status: appUser.status,
+  });
+
+  await supabase.from('app_users').update({ status: 'suspended' }).eq('id', appUser.id);
+
+  await supabase.auth.signOut();
+  redirect('/');
+}
+
 export async function updatePrivacyPreferences(formData: FormData) {
   const { supabase, appUser } = await getCurrentAppUser();
 

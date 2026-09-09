@@ -14,6 +14,7 @@
 8. `008_professional_profiles_staff_update.sql` — سياسة RLS تسمح لفريق الإدارة بتعديل `professional_profiles`، لازمة لاعتماد "طلبات التعديل" (القسم 34).
 9. `009_similarity_check.sql` — دالة `find_similar_applicants` لتنبيه التشابه التقريبي (الاسم/الهاتف/الواتساب) أثناء مراجعة الطلبات (القسم 22).
 10. `010_profile_photos_storage.sql` — دلو تخزين `profile-photos` عام القراءة، بسياسات تسمح لكل مستخدم برفع/تعديل/حذف صورته الخاصة فقط (القسم 15).
+11. `011_account_deletion.sql` — عمود `previous_status` وحالة `rejected` الإضافية في `deletion_requests`، وسياستا حذف على `identities`/`contacts` مقصورتان على admin فقط (القسم 38).
 
 ## طريقة التنفيذ على Supabase
 

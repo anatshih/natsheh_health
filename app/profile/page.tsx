@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import LogoutButton from '@/components/LogoutButton';
 import PhotoUpload from '@/components/PhotoUpload';
-import { updateProfile, updatePrivacyPreferences } from './actions';
+import { updateProfile, updatePrivacyPreferences, requestAccountDeletion } from './actions';
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'مسودة',
@@ -27,6 +27,7 @@ export default function ProfilePage() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [appUser, setAppUser] = useState<any>(null);
   const [identity, setIdentity] = useState<any>(null);
   const [contact, setContact] = useState<any>(null);
@@ -287,6 +288,33 @@ export default function ProfilePage() {
             className="mt-3 rounded-lg border border-primary px-5 py-2 text-sm font-semibold text-primary"
           >
             حفظ إعدادات الخصوصية
+          </button>
+        </form>
+      </div>
+
+      <div className="mt-8 rounded-xl border border-red-200 bg-red-50 p-6">
+        <h2 className="mb-2 text-sm font-bold text-red-800">منطقة الخطر</h2>
+        <p className="mb-4 text-xs leading-6 text-red-700">
+          حذف حسابك يُخفي ملفك فورًا من الدليل العام، ثم يصل الطلب إلى إدارة
+          الدليل للتأكد من هويتك قبل حذف بياناتك الشخصية والمهنية نهائيًا خلال
+          30 يومًا. <strong>لا يمكن التراجع عن هذا الإجراء بعد تنفيذه.</strong>
+        </p>
+        <form action={requestAccountDeletion}>
+          <label className="mb-3 flex items-start gap-2 text-xs text-red-800">
+            <input
+              type="checkbox"
+              checked={confirmDelete}
+              onChange={(e) => setConfirmDelete(e.target.checked)}
+              className="mt-0.5"
+            />
+            أفهم أن هذا الإجراء نهائي ولا يمكن التراجع عنه بعد موافقة الإدارة.
+          </label>
+          <button
+            type="submit"
+            disabled={!confirmDelete}
+            className="rounded-lg bg-red-600 px-5 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            حذف حسابي نهائيًا
           </button>
         </form>
       </div>
