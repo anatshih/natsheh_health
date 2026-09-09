@@ -49,6 +49,7 @@ type FormState = {
   jobTitle: string;
   workplaceType: string;
   employer: string;
+  workplaceAddress: string;
   workCountryId: string;
   workCityId: string;
   yearsExperience: string;
@@ -87,6 +88,7 @@ const initialForm: FormState = {
   jobTitle: '',
   workplaceType: '',
   employer: '',
+  workplaceAddress: '',
   workCountryId: '',
   workCityId: '',
   yearsExperience: '',
@@ -262,6 +264,7 @@ export default function JoinPage() {
         job_title: form.jobTitle || null,
         workplace_type: form.workplaceType || null,
         employer: form.employer || null,
+        workplace_address: form.workplaceAddress || null,
         work_country_id: form.workCountryId || null,
         work_city_id: form.workCityId || null,
         years_experience: form.yearsExperience ? Number(form.yearsExperience) : null,
@@ -496,6 +499,12 @@ export default function JoinPage() {
             optional
             value={form.employer}
             onChange={(v) => update('employer', v)}
+          />
+          <Field
+            label="الموقع (تفاصيل العنوان)"
+            optional
+            value={form.workplaceAddress}
+            onChange={(v) => update('workplaceAddress', v)}
           />
           <SelectField
             label="دولة العمل"

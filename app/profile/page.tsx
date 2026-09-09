@@ -248,6 +248,12 @@ export default function ProfilePage() {
             defaultValue={prof?.employer}
             optional
           />
+          <Field
+            name="workplace_address"
+            label="الموقع (تفاصيل العنوان)"
+            defaultValue={prof?.workplace_address}
+            optional
+          />
           <SelectField
             name="work_country_id"
             label="دولة العمل"

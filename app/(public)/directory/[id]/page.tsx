@@ -79,6 +79,7 @@ export default async function DirectoryProfilePage({
           {person.job_title && <InfoItem label="المسمى الوظيفي" value={person.job_title} />}
           {person.workplace_type && <InfoItem label="نوع مكان العمل" value={person.workplace_type} />}
           {person.employer && <InfoItem label="اسم مكان العمل" value={person.employer} />}
+          {person.workplace_address && <InfoItem label="الموقع" value={person.workplace_address} />}
           {(person.work_city || person.work_country) && (
             <InfoItem
               label="مكان العمل"

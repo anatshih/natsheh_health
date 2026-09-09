@@ -11,6 +11,7 @@ const PROFESSIONAL_FIELDS = new Set([
   'qualification',
   'employer',
   'workplace_type',
+  'workplace_address',
 ]);
 
 async function getReviewer(supabase: Awaited<ReturnType<typeof createClient>>) {

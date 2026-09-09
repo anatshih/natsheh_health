@@ -15,6 +15,7 @@ const SUBSTANTIVE_FIELDS = [
   'qualification',
   'employer',
   'workplace_type',
+  'workplace_address',
 ] as const;
 
 async function getCurrentAppUser() {
@@ -88,6 +89,7 @@ export async function updateProfile(formData: FormData) {
     qualification: str('qualification'),
     employer: str('employer'),
     workplace_type: str('workplace_type'),
+    workplace_address: str('workplace_address'),
   };
 
   const oldValues: Record<string, string> = {
@@ -98,6 +100,7 @@ export async function updateProfile(formData: FormData) {
     qualification: prof?.qualification ?? '',
     employer: prof?.employer ?? '',
     workplace_type: prof?.workplace_type ?? '',
+    workplace_address: prof?.workplace_address ?? '',
   };
 
   if (isPrePublication) {
@@ -115,6 +118,7 @@ export async function updateProfile(formData: FormData) {
         qualification: newValues.qualification,
         employer: newValues.employer || null,
         workplace_type: newValues.workplace_type || null,
+        workplace_address: newValues.workplace_address || null,
       })
       .eq('user_id', appUser.id);
   } else {
