@@ -28,9 +28,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen bg-slate-100">
       <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
         <div className="flex items-center gap-6">
-          <h1 className="font-heading text-lg font-bold text-primary">
-            لوحة إدارة الدليل الصحي
-          </h1>
+          <div className="flex items-center gap-2.5">
+            <img src="/logo.png" alt="شعار مجلس عائلة النتشة" className="h-9 w-auto" />
+            <h1 className="font-heading text-lg font-bold text-primary">
+              لوحة إدارة الدليل الصحي
+            </h1>
+          </div>
           <nav className="flex gap-4 text-sm font-semibold text-slate-600">
             <Link href="/admin" className="hover:text-primary">
               لوحة المؤشرات

@@ -129,9 +129,12 @@ export default function ProfilePage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold">ملفي الشخصي</h1>
-          <p className="text-sm text-slate-600">دليل الكفاءات الصحية — عائلة النتشة</p>
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="شعار مجلس عائلة النتشة" className="h-11 w-auto" />
+          <div>
+            <h1 className="text-2xl font-extrabold">ملفي الشخصي</h1>
+            <p className="text-sm text-slate-600">دليل الكفاءات الصحية — عائلة النتشة</p>
+          </div>
         </div>
         <LogoutButton />
       </div>

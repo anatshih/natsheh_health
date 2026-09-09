@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center gap-6 px-6 text-center">
+    <main className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-6 py-20 text-center">
       <p className="text-sm font-semibold text-primary">
         مجلس عائلة النتشة — الخليل، فلسطين
       </p>
