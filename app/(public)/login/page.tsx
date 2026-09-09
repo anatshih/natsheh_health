@@ -58,7 +58,7 @@ export default function LoginPage() {
         .eq('auth_user_id', signInData.user.id)
         .single();
 
-      router.push(appUser && ['admin', 'reviewer'].includes(appUser.role) ? '/admin' : '/');
+      router.push(appUser && ['admin', 'reviewer'].includes(appUser.role) ? '/admin' : '/profile');
       router.refresh();
     } catch {
       setError('حدث خطأ غير متوقع. حاول مرة أخرى.');
