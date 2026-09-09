@@ -370,13 +370,16 @@ export default function JoinPage() {
 
       <ol className="mb-10 flex gap-2 text-xs font-semibold text-slate-400">
         {STEPS.map((label, i) => (
-          <li
-            key={label}
-            className={`flex-1 border-t-2 pt-2 text-center ${
-              i + 1 <= step ? 'border-primary text-primary' : 'border-slate-200'
-            }`}
-          >
-            {label}
+          <li key={label} className="flex-1">
+            <button
+              type="button"
+              onClick={() => setStep(i + 1)}
+              className={`w-full border-t-2 pt-2 text-center hover:text-primary ${
+                i + 1 <= step ? 'border-primary text-primary' : 'border-slate-200'
+              }`}
+            >
+              {label}
+            </button>
           </li>
         ))}
       </ol>
