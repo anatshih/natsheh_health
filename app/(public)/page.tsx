@@ -53,13 +53,13 @@ export default function HomePage() {
           href="/directory"
           className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-dark"
         >
-          استعرض الدليل
+          تصفّح دليل الكفاءات
         </Link>
         <Link
           href="/join"
           className="rounded-lg border border-primary px-6 py-3 text-sm font-semibold text-primary hover:bg-primary-soft"
         >
-          طلب انضمام
+          انضمام كفاءة صحية جديدة
         </Link>
       </div>
 

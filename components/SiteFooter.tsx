@@ -37,10 +37,10 @@ export default function SiteFooter() {
               الرئيسية
             </Link>
             <Link href="/directory" className="text-xs font-semibold text-slate-600 hover:text-primary">
-              دليل الكفاءات
+              تصفّح دليل الكفاءات
             </Link>
             <Link href="/join" className="text-xs font-semibold text-slate-600 hover:text-primary">
-              طلب انضمام
+              انضمام كفاءة صحية جديدة
             </Link>
             <Link href="/stats" className="text-xs font-semibold text-slate-600 hover:text-primary">
               الإحصاءات
@@ -55,7 +55,7 @@ export default function SiteFooter() {
               الحساب والخصوصية
             </h3>
             <Link href="/login" className="text-xs font-semibold text-slate-600 hover:text-primary">
-              تسجيل الدخول
+              تسجيل دخول الكادر الصحي
             </Link>
             <Link href="/privacy" className="text-xs font-semibold text-slate-600 hover:text-primary">
               سياسة الخصوصية والاستخدام

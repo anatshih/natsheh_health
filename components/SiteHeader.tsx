@@ -2,11 +2,15 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import MobileNav from '@/components/MobileNav';
 
-const NAV_LINKS = [
-  { href: '/directory', label: 'دليل الكفاءات' },
+const SECONDARY_LINKS = [
   { href: '/stats', label: 'الإحصاءات' },
   { href: '/about', label: 'عن الدليل' },
-  { href: '/join', label: 'طلب انضمام' },
+];
+
+const NAV_LINKS = [
+  { href: '/directory', label: 'تصفّح دليل الكفاءات' },
+  ...SECONDARY_LINKS,
+  { href: '/join', label: 'انضمام كفاءة صحية جديدة' },
 ];
 
 // شريط علوي موحّد لكل الصفحات العامة، بالشعار الرسمي (القسم 49.1).
@@ -17,7 +21,7 @@ export default async function SiteHeader() {
   } = await supabase.auth.getUser();
 
   let accountHref = '/login';
-  let accountLabel = 'تسجيل الدخول';
+  let accountLabel = 'تسجيل دخول الكادر الصحي';
 
   if (user) {
     const { data: appUser } = await supabase
@@ -51,15 +55,24 @@ export default async function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-4 text-sm font-semibold text-slate-600 sm:flex">
-          {NAV_LINKS.map((l) => (
+          <Link
+            href="/directory"
+            className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary-dark"
+          >
+            تصفّح دليل الكفاءات
+          </Link>
+          {SECONDARY_LINKS.map((l) => (
             <Link key={l.href} href={l.href} className="hover:text-primary">
               {l.label}
             </Link>
           ))}
           <Link
-            href={accountHref}
-            className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary-dark"
+            href="/join"
+            className="rounded-lg border border-primary px-4 py-2 text-primary hover:bg-primary-soft"
           >
+            انضمام كفاءة صحية جديدة
+          </Link>
+          <Link href={accountHref} className="text-slate-500 hover:text-primary">
             {accountLabel}
           </Link>
         </nav>
