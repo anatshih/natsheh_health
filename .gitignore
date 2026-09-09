@@ -1,0 +1,26 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# env files — لا تُرفع أبدًا، تحتوي مفاتيح Supabase
+.env
+.env.local
+.env.*.local
+
+# أدوات محلية خاصة بالجهاز (Claude Code) — تحتوي مسارات مطلقة غير محمولة
+/.claude/
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
