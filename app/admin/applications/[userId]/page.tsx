@@ -145,6 +145,18 @@ export default async function ApplicationDetailPage({
       )}
 
       <Section title="بيانات الهوية">
+        {profile?.photo_url && (
+          <div className="mb-3 flex items-center gap-3">
+            <img
+              src={profile.photo_url}
+              alt="الصورة الشخصية المرفوعة"
+              className="h-16 w-16 rounded-full border border-slate-200 object-cover"
+            />
+            <span className="text-xs text-slate-500">
+              الصورة المرفوعة — تحقق من ملاءمتها ووضوحها قبل الاعتماد (القسم 15)
+            </span>
+          </div>
+        )}
         <Row label="الاسم الكامل حسب الهوية" value={identity?.full_name_legal} />
         <Row label="رقم الهوية" value={identity?.id_number} sensitive />
         <Row label="الفخذ / الفرع العائلي" value={profile?.family_branches?.name} />

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import PhotoUpload from '@/components/PhotoUpload';
 
 const STEPS = [
   'بيانات الهوية والحساب',
@@ -512,6 +513,20 @@ export default function JoinPage() {
           />
           <Field label="رقم الترخيص المهني" optional value={form.licenseNumber} onChange={(v) => update('licenseNumber', v)} />
           <Field label="جهة الترخيص" optional value={form.licenseAuthority} onChange={(v) => update('licenseAuthority', v)} />
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-slate-700">
+              الصورة الشخصية <span className="font-normal text-slate-400">(اختياري)</span>
+            </label>
+            <PhotoUpload
+              currentUrl={null}
+              onUploaded={async (url) => {
+                if (appUserId) {
+                  await supabase.from('profiles').update({ photo_url: url }).eq('user_id', appUserId);
+                }
+              }}
+            />
+          </div>
 
           <div className="flex gap-3">
             <button

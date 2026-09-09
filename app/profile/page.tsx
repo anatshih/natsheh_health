@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import LogoutButton from '@/components/LogoutButton';
+import PhotoUpload from '@/components/PhotoUpload';
 import { updateProfile, updatePrivacyPreferences } from './actions';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -163,6 +164,15 @@ export default function ProfilePage() {
 
       <form action={updateProfile} className="space-y-6">
         <Section title="بيانات الهوية">
+          <div className="mb-2">
+            <p className="mb-1.5 text-xs font-semibold text-slate-700">الصورة الشخصية</p>
+            <PhotoUpload
+              currentUrl={profile?.photo_url}
+              onUploaded={async (url) => {
+                await supabase.from('profiles').update({ photo_url: url }).eq('user_id', appUser.id);
+              }}
+            />
+          </div>
           <p className="text-xs text-slate-500">رقم الهوية: {identity?.id_number} (لا يمكن تعديله ذاتيًا)</p>
           <Field name="display_name" label="الاسم الظاهر للعامة" defaultValue={profile?.display_name} required />
           <SelectField
