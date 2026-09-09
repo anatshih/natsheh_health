@@ -14,10 +14,21 @@ const plexArabic = IBM_Plex_Sans_Arabic({
   variable: '--font-plex-arabic',
 });
 
+// metadataBase ضروري لبناء روابط Open Graph مطلقة صحيحة (og:url، og:image) لكل
+// صفحة على حدة — بدونه تعتمد بعض منصات المشاركة (مثل فيسبوك) على الرابط
+// الرئيسي للنطاق بدل الرابط الفرعي الفعلي المشارَك (صفحة الطبيب مثلًا).
 export const metadata: Metadata = {
+  metadataBase: new URL('https://natsheh-health.vercel.app'),
   title: 'دليل الكفاءات الصحية لعائلة النتشة',
   description:
     'منصة إلكترونية يشرف عليها مجلس عائلة النتشة – الخليل، فلسطين، لحصر وتوثيق وعرض الكفاءات الصحية من أبناء وبنات العائلة في الوطن والمهجر.',
+  openGraph: {
+    title: 'دليل الكفاءات الصحية لعائلة النتشة',
+    description:
+      'منصة إلكترونية يشرف عليها مجلس عائلة النتشة – الخليل، فلسطين، لحصر وتوثيق وعرض الكفاءات الصحية من أبناء وبنات العائلة في الوطن والمهجر.',
+    url: '/',
+    images: [{ url: '/logo.png' }],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

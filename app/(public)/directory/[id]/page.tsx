@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -6,6 +7,43 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 import RevealField from '@/components/RevealField';
 import WhatsAppShareButton from '@/components/WhatsAppShareButton';
 import FacebookShareButton from '@/components/FacebookShareButton';
+
+// بيانات Open Graph مخصصة لكل طبيب (بدل بيانات الصفحة الرئيسية العامة الموروثة
+// من layout.tsx)، لضمان أن مشاركة رابط صفحة طبيب عبر فيسبوك أو واتساب تعرض
+// اسمه وتخصصه وصورته (إن سمح بعرضها)، وترتبط برابط صفحته تحديدًا لا بالرئيسية.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+
+  const { data: person } = await supabase
+    .from('directory_public')
+    .select('*')
+    .eq('profile_id', id)
+    .single();
+
+  if (!person) return {};
+
+  const title = `${person.display_name}${person.specialty ? ` — ${person.specialty}` : ''} | دليل الكفاءات الصحية لعائلة النتشة`;
+  const description =
+    [person.specialty_category, person.specialty, person.qualification].filter(Boolean).join(' • ') ||
+    'كفاءة صحية ضمن دليل الكفاءات الصحية لعائلة النتشة.';
+  const image = person.photo_url || '/logo.png';
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `/directory/${id}`,
+      images: [{ url: image }],
+    },
+  };
+}
 
 export default async function DirectoryProfilePage({
   params,
