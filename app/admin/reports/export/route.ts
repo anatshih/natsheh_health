@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
   const [{ data: identities }, { data: contacts }, { data: profiles }, { data: profs }] = await Promise.all([
     supabase.from('identities').select('user_id, full_name_legal, id_number').in('user_id', ids),
-    supabase.from('contacts').select('user_id, phone, whatsapp, email').in('user_id', ids),
+    supabase.from('contacts').select('user_id, phone, whatsapp, email, facebook').in('user_id', ids),
     supabase
       .from('profiles')
       .select('user_id, family_branches(name), countries(name_ar), cities(name_ar)')
@@ -82,6 +82,7 @@ export async function GET(request: NextRequest) {
     'الهاتف',
     'الواتساب',
     'البريد الإلكتروني',
+    'حساب فيسبوك',
     'الدولة',
     'المدينة',
     'المجال الصحي',
@@ -110,6 +111,7 @@ export async function GET(request: NextRequest) {
         contact?.phone,
         contact?.whatsapp,
         contact?.email,
+        contact?.facebook,
         profile?.countries?.name_ar,
         profile?.cities?.name_ar,
         prof?.specialty_category_id ? categoryName[prof.specialty_category_id] : '',

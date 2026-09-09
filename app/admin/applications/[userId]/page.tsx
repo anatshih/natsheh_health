@@ -166,6 +166,7 @@ export default async function ApplicationDetailPage({
         <Row label="الهاتف" value={contact?.phone} />
         <Row label="الواتساب" value={contact?.whatsapp} />
         <Row label="البريد الإلكتروني" value={contact?.email} />
+        <Row label="حساب فيسبوك" value={contact?.facebook} />
       </Section>
 
       <Section title="بيانات الإقامة">

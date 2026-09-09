@@ -189,6 +189,7 @@ export default function ProfilePage() {
           <Field name="phone" label="الهاتف" defaultValue={contact?.phone} required />
           <Field name="whatsapp" label="الواتساب" defaultValue={contact?.whatsapp} required />
           <Field name="email" label="البريد الإلكتروني" defaultValue={contact?.email} optional />
+          <Field name="facebook" label="رابط حساب فيسبوك" defaultValue={contact?.facebook} optional />
         </Section>
 
         <Section title="بيانات الإقامة">
@@ -299,6 +300,7 @@ export default function ProfilePage() {
           <ToggleField name="show_phone" label="عرض رقم الهاتف" defaultChecked={prefs?.show_phone} />
           <ToggleField name="show_whatsapp" label="عرض رقم الواتساب" defaultChecked={prefs?.show_whatsapp} />
           <ToggleField name="show_email" label="عرض البريد الإلكتروني" defaultChecked={prefs?.show_email} />
+          <ToggleField name="show_facebook" label="عرض حساب فيسبوك" defaultChecked={prefs?.show_facebook} />
           <button
             type="submit"
             className="mt-3 rounded-lg border border-primary px-5 py-2 text-sm font-semibold text-primary"

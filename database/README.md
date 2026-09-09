@@ -18,6 +18,7 @@
 12. `012_drop_license_columns.sql` — حذف فعلي لعمودي `license_number`/`license_authority` من `professional_profiles` بعد إزالتهما من نموذج التسجيل بقرار من مالك المشروع.
 13. `013_workplace_type.sql` — عمود `workplace_type` (نوع مكان العمل: مستشفى/عيادة/صيدلية/مختبر...) في `professional_profiles`، وتحديث `directory_public` لعرضه ضمن نفس تفضيل `show_employer`. القائمة ثابتة في كود التطبيق (`lib/workplaceTypes.ts`) وليست جدولاً مُدارًا.
 14. `014_workplace_address.sql` — عمود `workplace_address` (نص حر لتفاصيل الموقع، مثل "بجانب مستشفى X") في `professional_profiles`، معامَل بنفس تفضيل `show_employer` في `directory_public`.
+15. `015_facebook_field.sql` — عمود `facebook` في `contacts` وتفضيل خصوصية مستقل `show_facebook` في `publication_preferences`، بنفس نمط الهاتف/الواتساب/البريد.
 
 ## طريقة التنفيذ على Supabase
 

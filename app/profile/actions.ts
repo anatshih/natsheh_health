@@ -55,6 +55,7 @@ export async function updateProfile(formData: FormData) {
       phone: str('phone'),
       whatsapp: str('whatsapp'),
       email: str('email') || null,
+      facebook: str('facebook') || null,
     })
     .eq('user_id', appUser.id);
 
@@ -166,6 +167,7 @@ export async function updatePrivacyPreferences(formData: FormData) {
     show_phone: formData.get('show_phone') === 'on',
     show_whatsapp: formData.get('show_whatsapp') === 'on',
     show_email: formData.get('show_email') === 'on',
+    show_facebook: formData.get('show_facebook') === 'on',
   });
 
   revalidatePath('/profile');

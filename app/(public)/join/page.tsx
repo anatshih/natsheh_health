@@ -37,6 +37,7 @@ type FormState = {
   countryId: string;
   cityId: string;
   email: string;
+  facebook: string;
   password: string;
   confirmPassword: string;
   agreePrivacy: boolean;
@@ -64,6 +65,7 @@ type FormState = {
   showPhone: boolean;
   showWhatsapp: boolean;
   showEmail: boolean;
+  showFacebook: boolean;
 };
 
 const initialForm: FormState = {
@@ -76,6 +78,7 @@ const initialForm: FormState = {
   countryId: '',
   cityId: '',
   email: '',
+  facebook: '',
   password: '',
   confirmPassword: '',
   agreePrivacy: false,
@@ -103,6 +106,7 @@ const initialForm: FormState = {
   showPhone: false,
   showWhatsapp: false,
   showEmail: false,
+  showFacebook: false,
 };
 
 export default function JoinPage() {
@@ -221,6 +225,7 @@ export default function JoinPage() {
         phone: form.phone,
         whatsapp: whatsappNumber,
         email: form.email || null,
+        facebook: form.facebook || null,
       });
 
       await supabase.from('profiles').insert({
@@ -318,6 +323,7 @@ export default function JoinPage() {
         show_phone: form.showPhone,
         show_whatsapp: form.showWhatsapp,
         show_email: form.showEmail,
+        show_facebook: form.showFacebook,
       });
 
       await supabase
@@ -422,6 +428,12 @@ export default function JoinPage() {
             options={residenceCities.map((c) => ({ value: c.id, label: c.name_ar! }))}
           />
           <Field label="البريد الإلكتروني" optional type="email" value={form.email} onChange={(v) => update('email', v)} />
+          <Field
+            label="رابط حساب فيسبوك"
+            optional
+            value={form.facebook}
+            onChange={(v) => update('facebook', v)}
+          />
           <Field label="كلمة المرور" required type="password" value={form.password} onChange={(v) => update('password', v)} />
           <Field
             label="تأكيد كلمة المرور"
@@ -651,6 +663,7 @@ export default function JoinPage() {
               <ToggleField label="عرض رقم الهاتف" checked={form.showPhone} onChange={(v) => update('showPhone', v)} />
               <ToggleField label="عرض رقم الواتساب" checked={form.showWhatsapp} onChange={(v) => update('showWhatsapp', v)} />
               <ToggleField label="عرض البريد الإلكتروني" checked={form.showEmail} onChange={(v) => update('showEmail', v)} />
+              <ToggleField label="عرض حساب فيسبوك" checked={form.showFacebook} onChange={(v) => update('showFacebook', v)} />
             </div>
           </div>
 

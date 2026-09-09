@@ -91,11 +91,12 @@ export default async function DirectoryProfilePage({
           )}
         </div>
 
-        {(person.phone || person.whatsapp || person.email) && (
+        {(person.phone || person.whatsapp || person.email || person.facebook) && (
           <div className="mt-5 grid grid-cols-2 gap-4 border-t border-slate-100 pt-5 sm:grid-cols-3">
             {person.phone && <RevealField label="رقم الهاتف" value={person.phone} />}
             {person.whatsapp && <RevealField label="رقم الواتساب" value={person.whatsapp} />}
             {person.email && <RevealField label="البريد الإلكتروني" value={person.email} />}
+            {person.facebook && <RevealField label="حساب فيسبوك" value={person.facebook} />}
           </div>
         )}
 
