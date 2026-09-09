@@ -10,6 +10,7 @@ const PROFESSIONAL_FIELDS = new Set([
   'sub_specialty_id',
   'qualification',
   'employer',
+  'workplace_type',
 ]);
 
 async function getReviewer(supabase: Awaited<ReturnType<typeof createClient>>) {

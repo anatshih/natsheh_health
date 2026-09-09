@@ -16,6 +16,7 @@
 10. `010_profile_photos_storage.sql` — دلو تخزين `profile-photos` عام القراءة، بسياسات تسمح لكل مستخدم برفع/تعديل/حذف صورته الخاصة فقط (القسم 15).
 11. `011_account_deletion.sql` — عمود `previous_status` وحالة `rejected` الإضافية في `deletion_requests`، وسياستا حذف على `identities`/`contacts` مقصورتان على admin فقط (القسم 38).
 12. `012_drop_license_columns.sql` — حذف فعلي لعمودي `license_number`/`license_authority` من `professional_profiles` بعد إزالتهما من نموذج التسجيل بقرار من مالك المشروع.
+13. `013_workplace_type.sql` — عمود `workplace_type` (نوع مكان العمل: مستشفى/عيادة/صيدلية/مختبر...) في `professional_profiles`، وتحديث `directory_public` لعرضه ضمن نفس تفضيل `show_employer`. القائمة ثابتة في كود التطبيق (`lib/workplaceTypes.ts`) وليست جدولاً مُدارًا.
 
 ## طريقة التنفيذ على Supabase
 

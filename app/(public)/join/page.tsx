@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import PhotoUpload from '@/components/PhotoUpload';
+import { WORKPLACE_TYPES } from '@/lib/workplaceTypes';
 
 const STEPS = [
   'بيانات الهوية والحساب',
@@ -46,6 +47,7 @@ type FormState = {
   qualification: string;
   university: string;
   jobTitle: string;
+  workplaceType: string;
   employer: string;
   workCountryId: string;
   workCityId: string;
@@ -83,6 +85,7 @@ const initialForm: FormState = {
   qualification: '',
   university: '',
   jobTitle: '',
+  workplaceType: '',
   employer: '',
   workCountryId: '',
   workCityId: '',
@@ -257,6 +260,7 @@ export default function JoinPage() {
         qualification: form.qualification,
         university: form.university || null,
         job_title: form.jobTitle || null,
+        workplace_type: form.workplaceType || null,
         employer: form.employer || null,
         work_country_id: form.workCountryId || null,
         work_city_id: form.workCityId || null,
@@ -480,7 +484,19 @@ export default function JoinPage() {
           <Field label="المؤهل العلمي" required value={form.qualification} onChange={(v) => update('qualification', v)} />
           <Field label="الجامعة / المؤسسة التعليمية" optional value={form.university} onChange={(v) => update('university', v)} />
           <Field label="المسمى الوظيفي الحالي" optional value={form.jobTitle} onChange={(v) => update('jobTitle', v)} />
-          <Field label="جهة العمل" optional value={form.employer} onChange={(v) => update('employer', v)} />
+          <SelectField
+            label="نوع مكان العمل"
+            optional
+            value={form.workplaceType}
+            onChange={(v) => update('workplaceType', v)}
+            options={WORKPLACE_TYPES.map((t) => ({ value: t, label: t }))}
+          />
+          <Field
+            label="اسم مكان العمل (المستشفى / العيادة / الصيدلية...)"
+            optional
+            value={form.employer}
+            onChange={(v) => update('employer', v)}
+          />
           <SelectField
             label="دولة العمل"
             optional

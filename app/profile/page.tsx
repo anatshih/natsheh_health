@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import LogoutButton from '@/components/LogoutButton';
 import PhotoUpload from '@/components/PhotoUpload';
 import { updateProfile, updatePrivacyPreferences, requestAccountDeletion } from './actions';
+import { WORKPLACE_TYPES } from '@/lib/workplaceTypes';
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'مسودة',
@@ -235,7 +236,18 @@ export default function ProfilePage() {
           <Field name="qualification" label="المؤهل العلمي" defaultValue={prof?.qualification} required />
           <Field name="university" label="الجامعة" defaultValue={prof?.university} optional />
           <Field name="job_title" label="المسمى الوظيفي" defaultValue={prof?.job_title} optional />
-          <Field name="employer" label="جهة العمل" defaultValue={prof?.employer} optional />
+          <SelectField
+            name="workplace_type"
+            label="نوع مكان العمل"
+            defaultValue={prof?.workplace_type}
+            options={WORKPLACE_TYPES.map((t) => ({ value: t, label: t }))}
+          />
+          <Field
+            name="employer"
+            label="اسم مكان العمل (المستشفى / العيادة / الصيدلية...)"
+            defaultValue={prof?.employer}
+            optional
+          />
           <SelectField
             name="work_country_id"
             label="دولة العمل"

@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     supabase
       .from('professional_profiles')
       .select(
-        'user_id, qualification, employer, years_experience, specialty_category_id, specialty_id, work_country_id'
+        'user_id, qualification, employer, workplace_type, years_experience, specialty_category_id, specialty_id, work_country_id'
       )
       .in('user_id', ids),
   ]);
@@ -87,7 +87,8 @@ export async function GET(request: NextRequest) {
     'المجال الصحي',
     'التخصص',
     'المؤهل',
-    'جهة العمل',
+    'نوع مكان العمل',
+    'اسم مكان العمل',
     'سنوات الخبرة',
     'الحالة',
   ];
@@ -113,6 +114,7 @@ export async function GET(request: NextRequest) {
         prof?.specialty_category_id ? categoryName[prof.specialty_category_id] : '',
         prof?.specialty_id ? specialtyName[prof.specialty_id] : '',
         prof?.qualification,
+        prof?.workplace_type,
         prof?.employer,
         prof?.years_experience,
         statusMap[id],

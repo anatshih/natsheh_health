@@ -77,7 +77,8 @@ export default async function DirectoryProfilePage({
         <div className="mt-6 grid grid-cols-2 gap-4 border-t border-slate-100 pt-5 sm:grid-cols-3">
           {person.qualification && <InfoItem label="المؤهل العلمي" value={person.qualification} />}
           {person.job_title && <InfoItem label="المسمى الوظيفي" value={person.job_title} />}
-          {person.employer && <InfoItem label="جهة العمل" value={person.employer} />}
+          {person.workplace_type && <InfoItem label="نوع مكان العمل" value={person.workplace_type} />}
+          {person.employer && <InfoItem label="اسم مكان العمل" value={person.employer} />}
           {(person.work_city || person.work_country) && (
             <InfoItem
               label="مكان العمل"

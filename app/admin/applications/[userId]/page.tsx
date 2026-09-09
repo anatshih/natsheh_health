@@ -180,7 +180,8 @@ export default async function ApplicationDetailPage({
         <Row label="المؤهل العلمي" value={prof?.qualification} />
         <Row label="الجامعة" value={prof?.university} />
         <Row label="المسمى الوظيفي" value={prof?.job_title} />
-        <Row label="جهة العمل" value={prof?.employer} />
+        <Row label="نوع مكان العمل" value={prof?.workplace_type} />
+        <Row label="اسم مكان العمل" value={prof?.employer} />
         <Row label="دولة العمل" value={specialtyLabels.workCountry} />
         <Row label="مدينة العمل" value={specialtyLabels.workCity} />
         <Row label="سنوات الخبرة" value={prof?.years_experience} />
