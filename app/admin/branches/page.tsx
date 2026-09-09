@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { addBranch, renameBranch, toggleBranch } from './actions';
+import ToggleSwitch from '@/components/ToggleSwitch';
 
 // إدارة الفخذ / الفرع العائلي (القسم 53): لا حذف، فقط تفعيل/تعطيل حفاظًا
 // على السجلات المرتبطة به.
@@ -51,14 +52,7 @@ export default async function BranchesPage() {
                 <form action={toggleBranch}>
                   <input type="hidden" name="id" value={b.id} />
                   <input type="hidden" name="nextActive" value={(!b.is_active).toString()} />
-                  <button
-                    type="submit"
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      b.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
-                    }`}
-                  >
-                    {b.is_active ? 'نشط' : 'معطّل'}
-                  </button>
+                  <ToggleSwitch active={b.is_active} />
                 </form>
               )}
             </div>

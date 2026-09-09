@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { addCategory, toggleCategory, addSpecialty, toggleSpecialty } from './actions';
+import ToggleSwitch from '@/components/ToggleSwitch';
 
 type Row = { id: string; name: string; is_active: boolean; category_id?: string; parent_id?: string | null };
 
@@ -68,14 +69,7 @@ export default function SpecialtiesPage() {
                   >
                     <input type="hidden" name="id" value={c.id} />
                     <input type="hidden" name="nextActive" value={(!c.is_active).toString()} />
-                    <button
-                      type="submit"
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        c.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
-                      }`}
-                    >
-                      {c.is_active ? 'نشط' : 'معطّل'}
-                    </button>
+                    <ToggleSwitch active={c.is_active} />
                   </form>
                 )}
               </div>
@@ -133,14 +127,7 @@ export default function SpecialtiesPage() {
                     >
                       <input type="hidden" name="id" value={s.id} />
                       <input type="hidden" name="nextActive" value={(!s.is_active).toString()} />
-                      <button
-                        type="submit"
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          s.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
-                        }`}
-                      >
-                        {s.is_active ? 'نشط' : 'معطّل'}
-                      </button>
+                      <ToggleSwitch active={s.is_active} />
                     </form>
                   )}
                 </div>

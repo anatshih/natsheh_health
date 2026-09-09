@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { addCountry, toggleCountry, addCity, toggleCity } from './actions';
+import ToggleSwitch from '@/components/ToggleSwitch';
 
 // إدارة الدول والمدن (القسم 54). لا حذف، فقط تفعيل/تعطيل.
 export default async function LocationsPage() {
@@ -41,14 +42,7 @@ export default async function LocationsPage() {
                   <form action={toggleCountry}>
                     <input type="hidden" name="id" value={c.id} />
                     <input type="hidden" name="nextActive" value={(!c.is_active).toString()} />
-                    <button
-                      type="submit"
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        c.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
-                      }`}
-                    >
-                      {c.is_active ? 'نشطة' : 'معطّلة'}
-                    </button>
+                    <ToggleSwitch active={c.is_active} activeLabel="نشطة" inactiveLabel="معطّلة" />
                   </form>
                 )}
               </div>
@@ -81,14 +75,7 @@ export default async function LocationsPage() {
                   <form action={toggleCity}>
                     <input type="hidden" name="id" value={c.id} />
                     <input type="hidden" name="nextActive" value={(!c.is_active).toString()} />
-                    <button
-                      type="submit"
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        c.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
-                      }`}
-                    >
-                      {c.is_active ? 'نشطة' : 'معطّلة'}
-                    </button>
+                    <ToggleSwitch active={c.is_active} activeLabel="نشطة" inactiveLabel="معطّلة" />
                   </form>
                 )}
               </div>
