@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import DirectoryAvatar from '@/components/DirectoryAvatar';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import AnimatedNumber from '@/components/AnimatedNumber';
 
 type DirectoryRow = {
   profile_id: string;
@@ -15,7 +16,10 @@ type DirectoryRow = {
   job_title: string | null;
   employer: string | null;
   years_experience: number | null;
+  last_updated_at: string | null;
 };
+
+const NEW_WINDOW_DAYS = 30;
 
 export default async function DirectoryPage({
   searchParams,
@@ -28,7 +32,7 @@ export default async function DirectoryPage({
   let query = supabase
     .from('directory_public')
     .select(
-      'profile_id, display_name, photo_url, residence_country, residence_city, specialty_category, specialty, sub_specialty, job_title, employer, years_experience'
+      'profile_id, display_name, photo_url, residence_country, residence_city, specialty_category, specialty, sub_specialty, job_title, employer, years_experience, last_updated_at'
     )
     .order('last_updated_at', { ascending: false })
     .limit(30);
@@ -38,7 +42,28 @@ export default async function DirectoryPage({
     query = query.or(`display_name.ilike.%${q}%,specialty.ilike.%${q}%`);
   }
 
-  const { data: results, error } = await query;
+  const [{ data: results, error }, { data: allRows }] = await Promise.all([
+    query,
+    // مجموعة كاملة غير مفلترة لحساب الإحصاءات ووسوم التخصصات الأكثر انتشارًا
+    supabase.from('directory_public').select('specialty, residence_country'),
+  ]);
+
+  const totalCount = allRows?.length ?? 0;
+  const countryCount = new Set((allRows ?? []).map((r) => r.residence_country).filter(Boolean)).size;
+
+  const specialtyCounts = new Map<string, number>();
+  for (const r of allRows ?? []) {
+    if (!r.specialty) continue;
+    specialtyCounts.set(r.specialty, (specialtyCounts.get(r.specialty) ?? 0) + 1);
+  }
+  const specialtyCount = specialtyCounts.size;
+  const topSpecialties = [...specialtyCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
+
+  const now = Date.now();
+  const isNew = (dateStr: string | null) =>
+    !!dateStr && now - new Date(dateStr).getTime() < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
@@ -47,7 +72,13 @@ export default async function DirectoryPage({
         الكفاءات المعتمدة والمنشورة فقط من أبناء وبنات عائلة النتشة.
       </p>
 
-      <form className="mb-8 flex max-w-md gap-2">
+      <div className="mb-8 grid grid-cols-3 gap-3 sm:max-w-md">
+        <StatTile value={totalCount} label="كفاءة موثّقة" />
+        <StatTile value={specialtyCount} label="تخصصًا" />
+        <StatTile value={countryCount} label="دولة" />
+      </div>
+
+      <form className="mb-5 flex max-w-md gap-2">
         <input
           type="text"
           name="q"
@@ -63,6 +94,32 @@ export default async function DirectoryPage({
         </button>
       </form>
 
+      {topSpecialties.length > 0 && (
+        <div className="mb-8 flex flex-wrap gap-2">
+          {topSpecialties.map(([name, count]) => (
+            <Link
+              key={name}
+              href={`/directory?q=${encodeURIComponent(name)}`}
+              className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                q === name
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-primary hover:text-primary'
+              }`}
+            >
+              {name} ({count})
+            </Link>
+          ))}
+          {q && (
+            <Link
+              href="/directory"
+              className="rounded-full px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-primary"
+            >
+              مسح التصفية ✕
+            </Link>
+          )}
+        </div>
+      )}
+
       {error && (
         <p className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
           تعذّر تحميل النتائج حاليًا. تأكد من تنفيذ مخطط قاعدة البيانات في database/.
@@ -77,8 +134,14 @@ export default async function DirectoryPage({
         {results?.map((row: DirectoryRow) => (
           <article
             key={row.profile_id}
-            className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5"
+            className="relative flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
           >
+            {isNew(row.last_updated_at) && (
+              <span className="absolute left-4 top-4 rounded-full bg-accent-soft px-2.5 py-1 text-[10px] font-bold text-accent">
+                انضم حديثًا
+              </span>
+            )}
+
             <div className="flex items-center gap-3">
               <DirectoryAvatar photoUrl={row.photo_url} name={row.display_name} size={52} />
               <div>
@@ -115,6 +178,17 @@ export default async function DirectoryPage({
         ))}
       </div>
     </main>
+  );
+}
+
+function StatTile({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white py-3 text-center">
+      <p className="font-heading text-2xl font-extrabold text-primary">
+        <AnimatedNumber value={value} />
+      </p>
+      <p className="text-[11px] text-slate-500">{label}</p>
+    </div>
   );
 }
 

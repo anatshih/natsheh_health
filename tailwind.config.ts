@@ -13,6 +13,7 @@ const config: Config = {
         },
         accent: {
           DEFAULT: '#B4842A',
+          soft: '#F5EBD8',
         },
         verified: '#1F8A5F',
       },
