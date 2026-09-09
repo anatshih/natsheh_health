@@ -5,6 +5,7 @@ import DirectoryAvatar from '@/components/DirectoryAvatar';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import RevealField from '@/components/RevealField';
 import WhatsAppShareButton from '@/components/WhatsAppShareButton';
+import FacebookShareButton from '@/components/FacebookShareButton';
 
 export default async function DirectoryProfilePage({
   params,
@@ -108,9 +109,13 @@ export default async function DirectoryProfilePage({
           </div>
         )}
 
-        <div className="mt-5 border-t border-slate-100 pt-5">
+        <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-5">
           <WhatsAppShareButton
             text={`تعرّف على ${person.display_name}${person.specialty ? ` — ${person.specialty}` : ''} ضمن دليل الكفاءات الصحية لعائلة النتشة:`}
+            className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-primary hover:text-primary"
+          />
+          <FacebookShareButton
+            quote={`تعرّف على ${person.display_name}${person.specialty ? ` — ${person.specialty}` : ''} ضمن دليل الكفاءات الصحية لعائلة النتشة:`}
             className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-primary hover:text-primary"
           />
         </div>

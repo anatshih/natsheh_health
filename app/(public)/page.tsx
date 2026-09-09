@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import WhatsAppShareButton from '@/components/WhatsAppShareButton';
+import FacebookShareButton from '@/components/FacebookShareButton';
 
 export default function HomePage() {
   return (
@@ -60,10 +61,16 @@ export default function HomePage() {
         </Link>
       </div>
 
-      <WhatsAppShareButton
-        text="دليل الكفاءات الصحية لعائلة النتشة — تصفّح الأطباء والكفاءات الصحية في العائلة:"
-        className="mt-2 flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:border-primary hover:text-primary"
-      />
+      <div className="mt-2 flex flex-wrap justify-center gap-3">
+        <WhatsAppShareButton
+          text="دليل الكفاءات الصحية لعائلة النتشة — تصفّح الأطباء والكفاءات الصحية في العائلة:"
+          className="flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:border-primary hover:text-primary"
+        />
+        <FacebookShareButton
+          quote="دليل الكفاءات الصحية لعائلة النتشة — تصفّح الأطباء والكفاءات الصحية في العائلة:"
+          className="flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:border-primary hover:text-primary"
+        />
+      </div>
     </main>
   );
 }
