@@ -25,8 +25,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
+    <div className="min-h-screen bg-slate-100 print:bg-white">
+      <header className="print:hidden flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2.5">
             <img src="/logo.png" alt="شعار مجلس عائلة النتشة" className="h-9 w-auto" />
@@ -56,6 +56,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin/password-resets" className="hover:text-primary">
               استعادة الحسابات
             </Link>
+            <Link href="/admin/reports" className="hover:text-primary">
+              التقارير
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">
@@ -63,7 +66,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <LogoutButton />
         </div>
       </header>
-      <div className="p-6">{children}</div>
+      <div className="p-6 print:p-0">{children}</div>
     </div>
   );
 }
