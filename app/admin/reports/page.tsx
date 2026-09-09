@@ -101,13 +101,15 @@ export default async function ReportsPage({
               <Th>المؤهل</Th>
               <Th>جهة العمل</Th>
               <Th>سنوات الخبرة</Th>
+              <Th>الاستعداد للمساهمة المستقبلية</Th>
+              <Th>مجالات المساهمة</Th>
               <Th>الحالة</Th>
             </tr>
           </thead>
           <tbody>
             {records.length === 0 ? (
               <tr>
-                <td colSpan={14} className="p-6 text-center text-slate-400">
+                <td colSpan={16} className="p-6 text-center text-slate-400">
                   لا توجد سجلات مطابقة للفلاتر المحددة.
                 </td>
               </tr>
@@ -127,6 +129,8 @@ export default async function ReportsPage({
                   <Td>{r.qualification}</Td>
                   <Td>{r.employer}</Td>
                   <Td>{r.yearsExperience ?? ''}</Td>
+                  <Td>{r.contributionWillingness}</Td>
+                  <Td>{r.contributionAreas}</Td>
                   <Td>{STATUS_LABELS[r.status] ?? r.status}</Td>
                 </tr>
               ))

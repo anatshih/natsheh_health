@@ -71,11 +71,6 @@ export async function loadReportData(scope: ReportScope) {
   let insidePalestine = 0;
   let outsidePalestine = 0;
 
-  const WILLINGNESS_LABELS: Record<string, string> = {
-    yes: 'نعم',
-    depends: 'حسب طبيعة النشاط',
-    not_available: 'غير متاح حاليًا',
-  };
   const byContributionWillingness: Record<string, number> = {};
   const byContributionArea: Record<string, number> = {};
 
@@ -155,6 +150,12 @@ export const STATUS_LABELS: Record<string, string> = {
 
 export const ALL_STATUSES = Object.keys(STATUS_LABELS);
 
+export const WILLINGNESS_LABELS: Record<string, string> = {
+  yes: 'نعم',
+  depends: 'حسب طبيعة النشاط',
+  not_available: 'غير متاح حاليًا',
+};
+
 export type ReportFilters = {
   statuses: string[];
   branchIds: string[];
@@ -184,6 +185,8 @@ export type DetailedRecord = {
   employer: string;
   workplaceAddress: string;
   yearsExperience: number | null;
+  contributionWillingness: string;
+  contributionAreas: string;
 };
 
 function byUserId(rows: any[] | null): Record<string, any> {
@@ -206,7 +209,7 @@ export async function loadDetailedRecords(filters: ReportFilters): Promise<Detai
       supabase
         .from('profiles')
         .select(
-          'user_id, family_branch_id, residence_country_id, family_branches(name), countries(name_ar), cities(name_ar)'
+          'user_id, family_branch_id, residence_country_id, future_contribution_willingness, future_contribution_areas, family_branches(name), countries(name_ar), cities(name_ar)'
         )
         .in('user_id', ids),
       supabase
@@ -256,6 +259,10 @@ export async function loadDetailedRecords(filters: ReportFilters): Promise<Detai
       employer: prof?.employer ?? '',
       workplaceAddress: prof?.workplace_address ?? '',
       yearsExperience: prof?.years_experience ?? null,
+      contributionWillingness: profile?.future_contribution_willingness
+        ? WILLINGNESS_LABELS[profile.future_contribution_willingness] ?? ''
+        : '',
+      contributionAreas: (profile?.future_contribution_areas ?? []).join('، '),
     };
   });
 

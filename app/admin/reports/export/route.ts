@@ -57,6 +57,8 @@ export async function GET(request: NextRequest) {
     'اسم مكان العمل',
     'الموقع',
     'سنوات الخبرة',
+    'الاستعداد للمساهمة المستقبلية',
+    'مجالات المساهمة',
     'الحالة',
   ];
 
@@ -81,6 +83,8 @@ export async function GET(request: NextRequest) {
         r.employer,
         r.workplaceAddress,
         r.yearsExperience,
+        r.contributionWillingness,
+        r.contributionAreas,
         STATUS_LABELS[r.status] ?? r.status,
       ]
         .map(csvEscape)
