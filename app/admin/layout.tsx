@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import LogoutButton from '@/components/LogoutButton';
 
 // حماية إضافية على مستوى الصفحة فوق middleware.ts: التحقق الفعلي من الدور
 // (reviewer/admin) وليس فقط من وجود جلسة (القسم 61، بند 4 و5).
@@ -28,7 +29,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <h1 className="font-heading text-lg font-bold text-primary">
           لوحة إدارة الدليل الصحي
         </h1>
-        <span className="text-xs text-slate-500">دور الحساب: {appUser.role}</span>
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-slate-500">دور الحساب: {appUser.role}</span>
+          <LogoutButton />
+        </div>
       </header>
       <div className="p-6">{children}</div>
     </div>
