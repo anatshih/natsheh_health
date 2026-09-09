@@ -5,9 +5,12 @@ import FacebookShareButton from '@/components/FacebookShareButton';
 export default function HomePage() {
   return (
     <main className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-6 py-20 text-center">
-      <p className="text-sm font-semibold text-primary">
-        مجلس عائلة النتشة — الخليل، فلسطين
-      </p>
+      <div className="flex items-center justify-center gap-3">
+        <img src="/logo.png" alt="شعار مجلس عائلة النتشة" className="h-12 w-auto" />
+        <p className="text-lg font-bold text-primary sm:text-xl">
+          مجلس عائلة النتشة — الخليل، فلسطين
+        </p>
+      </div>
       <h1 className="text-3xl font-extrabold leading-snug text-slate-900 sm:text-4xl">
         دليل الكفاءات الصحية لعائلة النتشة
       </h1>
@@ -38,11 +41,10 @@ export default function HomePage() {
         </p>
         <p className="font-bold text-slate-800">
           وجودك في الدليل يثري هذه المنظومة؛ سجّل بياناتك وكن جزءًا من شبكة تجمع
-          كفاءات عائلة النتشة الصحية، وتدعم تطورها وعطاءها لخدمة العائلة
-          والمجتمع.
-        </p>
-        <p className="text-center text-sm italic text-slate-400">
-          بإشراف مجلس عائلة النتشة – الخليل، فلسطين.
+          كفاءات عائلة النتشة الصحية، وتدعم تطورها وعطاءها لخدمة العائلة والمجتمع.{' '}
+          <strong className="font-extrabold text-primary">
+            بإشراف مجلس عائلة النتشة ومجلس النقباء – الخليل، فلسطين.
+          </strong>
         </p>
       </div>
 
