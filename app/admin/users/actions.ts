@@ -4,25 +4,21 @@ import { revalidatePath } from 'next/cache';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 
-function generateTempPassword() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-  let out = '';
-  for (let i = 0; i < 12; i++) out += chars[Math.floor(Math.random() * chars.length)];
-  return out;
-}
-
-type CreateResult = { password: string; error?: undefined } | { error: string; password?: undefined };
+type CreateResult = { ok: true; error?: undefined } | { error: string; ok?: undefined };
 
 // إنشاء حساب فريق (مدير/مراجع) — مقصور على admin. يستخدم عميل Supabase منفصل
 // بمفتاح anon فقط (بلا تخزين جلسة) لإنشاء حساب Auth جديد دون المساس بجلسة
 // المدير الحالي، ثم يربط الحساب بصلاحيته عبر جلسة المدير نفسها (تسمح بذلك
 // سياسة "الإدارة تدير الحسابات" في RLS، القسم 61). لا حاجة لمفتاح service_role.
+// اسم المستخدم وكلمة المرور يحددهما المدير نفسه يدويًا (بدل توليد تلقائي).
 export async function createStaffAccount(formData: FormData): Promise<CreateResult> {
   const name = (formData.get('name') as string)?.trim();
   const email = (formData.get('email') as string)?.trim();
+  const password = (formData.get('password') as string) ?? '';
   const role = formData.get('role') as string;
 
-  if (!name || !email) return { error: 'الاسم والبريد الإلكتروني إلزاميان.' };
+  if (!name || !email) return { error: 'الاسم واسم المستخدم إلزاميان.' };
+  if (password.length < 8) return { error: 'كلمة المرور يجب أن لا تقل عن 8 أحرف.' };
   if (!['admin', 'reviewer'].includes(role)) return { error: 'صلاحية غير صالحة.' };
 
   const supabase = await createClient();
@@ -40,8 +36,6 @@ export async function createStaffAccount(formData: FormData): Promise<CreateResu
   if (!me || me.role !== 'admin') {
     return { error: 'إنشاء حسابات الفريق مقصور على المدير.' };
   }
-
-  const password = generateTempPassword();
 
   const freshClient = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -69,7 +63,7 @@ export async function createStaffAccount(formData: FormData): Promise<CreateResu
   }
 
   revalidatePath('/admin/users');
-  return { password };
+  return { ok: true };
 }
 
 // تغيير صلاحية حساب فريق قائم، أو إلغاؤها (role: 'applicant' يزيل وصوله

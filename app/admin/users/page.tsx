@@ -26,7 +26,8 @@ export default function UsersPage() {
   const [staff, setStaff] = useState<StaffRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [revealedPassword, setRevealedPassword] = useState<{ email: string; password: string } | null>(null);
+  const [created, setCreated] = useState<string | null>(null);
+  const [formKey, setFormKey] = useState(0);
 
   async function load() {
     const {
@@ -55,17 +56,18 @@ export default function UsersPage() {
 
   async function handleCreate(formData: FormData) {
     setError(null);
-    setRevealedPassword(null);
+    setCreated(null);
     setLoading(true);
     const result = await createStaffAccount(formData);
     setLoading(false);
 
-    if (typeof result.password !== 'string') {
+    if (!result.ok) {
       setError(result.error ?? 'حدث خطأ غير متوقع.');
       return;
     }
 
-    setRevealedPassword({ email: formData.get('email') as string, password: result.password });
+    setCreated(formData.get('email') as string);
+    setFormKey((k) => k + 1); // إعادة تعيين النموذج (بما فيها كلمة المرور) بعد نجاح الإنشاء
     load();
   }
 
@@ -127,37 +129,43 @@ export default function UsersPage() {
       {isAdmin && (
         <div>
           <h3 className="mb-3 text-sm font-bold text-slate-700">إضافة حساب فريق جديد</h3>
-          <form action={handleCreate} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <input
-                name="name"
-                required
-                placeholder="الاسم"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              />
-              <input
-                name="email"
-                type="email"
-                required
-                placeholder="البريد الإلكتروني"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              />
-            </div>
+          <form
+            key={formKey}
+            action={handleCreate}
+            className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5"
+          >
             <select name="role" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
               <option value="reviewer">مراجع — صلاحية مراجعة فقط</option>
               <option value="admin">مدير نظام — صلاحية كاملة</option>
             </select>
+            <input
+              name="name"
+              required
+              placeholder="الاسم"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            />
+            <input
+              name="email"
+              type="email"
+              required
+              placeholder="اسم المستخدم (بريد إلكتروني)"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            />
+            <input
+              name="password"
+              type="text"
+              required
+              minLength={8}
+              placeholder="كلمة المرور (8 أحرف على الأقل)"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            />
 
             {error && <p className="text-xs text-red-600">{error}</p>}
 
-            {revealedPassword && (
-              <div className="rounded-lg bg-emerald-50 p-3 text-sm">
-                <p className="mb-1 font-semibold text-emerald-800">
-                  تم إنشاء الحساب. أرسل هذه البيانات للشخص الآن — كلمة المرور لن تظهر مرة أخرى:
-                </p>
-                <p className="text-xs text-slate-600">البريد: {revealedPassword.email}</p>
-                <p className="font-mono text-base">{revealedPassword.password}</p>
-              </div>
+            {created && (
+              <p className="rounded-lg bg-emerald-50 p-3 text-xs font-semibold text-emerald-800">
+                تم إنشاء حساب "{created}" بنجاح.
+              </p>
             )}
 
             <button
