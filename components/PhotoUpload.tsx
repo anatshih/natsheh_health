@@ -73,13 +73,11 @@ export default function PhotoUpload({
 
   return (
     <div className="flex items-center gap-4">
-      {preview ? (
-        <img src={preview} alt="الصورة الشخصية" className="h-16 w-16 rounded-full object-cover" />
-      ) : (
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-xs text-slate-400">
-          بدون صورة
-        </div>
-      )}
+      <img
+        src={preview || '/default-avatar.png'}
+        alt="الصورة الشخصية"
+        className="h-16 w-16 rounded-full object-cover"
+      />
       <div>
         <label className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
           {uploading ? 'جارٍ الرفع…' : 'اختيار صورة'}
