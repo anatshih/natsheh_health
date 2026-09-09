@@ -52,6 +52,11 @@ export default async function ReportsPrintPage({
           ['غير محدد', data.byExperience.unknown],
         ]}
       />
+      <Section
+        title="المتاحون للمساهمة الصحية المستقبلية"
+        rows={Object.entries(data.byContributionWillingness)}
+      />
+      <Section title="مجالات المساهمة الأكثر طلبًا" rows={Object.entries(data.byContributionArea)} />
     </div>
   );
 }

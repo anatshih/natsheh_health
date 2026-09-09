@@ -502,7 +502,14 @@ export default function JoinPage() {
               options={subSpecialties.map((s) => ({ value: s.id, label: s.name! }))}
             />
           )}
-          <Field label="المؤهل العلمي" required value={form.qualification} onChange={(v) => update('qualification', v)} />
+          <Field
+            label="المؤهل العلمي"
+            required
+            value={form.qualification}
+            onChange={(v) => update('qualification', v)}
+            placeholder="مثال: بكالوريوس، ماجستير، طالب طب، متدرب تمريض..."
+            hint="يشمل الدليل أيضًا طلاب وطالبات القطاع الصحي والمتدربين، وليس العاملين فقط."
+          />
           <Field label="الجامعة / المؤسسة التعليمية" optional value={form.university} onChange={(v) => update('university', v)} />
           <Field label="المسمى الوظيفي الحالي" optional value={form.jobTitle} onChange={(v) => update('jobTitle', v)} />
           <SelectField
@@ -543,10 +550,11 @@ export default function JoinPage() {
           />
           <Field
             label="سنوات الخبرة"
-            required
+            optional
             type="number"
             value={form.yearsExperience}
             onChange={(v) => update('yearsExperience', v)}
+            hint="اتركه فارغًا إذا كنت ما زلت طالبًا أو متدربًا."
           />
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-700">
@@ -707,6 +715,8 @@ function Field({
   type = 'text',
   value,
   onChange,
+  placeholder,
+  hint,
 }: {
   label: string;
   required?: boolean;
@@ -714,6 +724,8 @@ function Field({
   type?: string;
   value: string;
   onChange: (v: string) => void;
+  placeholder?: string;
+  hint?: string;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -727,8 +739,10 @@ function Field({
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
         className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
       />
+      {hint && <p className="text-[11px] text-slate-400">{hint}</p>}
     </div>
   );
 }

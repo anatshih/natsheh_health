@@ -38,7 +38,10 @@ export async function loadReportData(scope: ReportScope) {
 
   const [{ data: profiles }, { data: profs }, { data: countries }, { data: categories }] = await Promise.all([
     filteredIds.length
-      ? supabase.from('profiles').select('user_id, residence_country_id').in('user_id', filteredIds)
+      ? supabase
+          .from('profiles')
+          .select('user_id, residence_country_id, future_contribution_willingness, future_contribution_areas')
+          .in('user_id', filteredIds)
       : Promise.resolve({ data: [] as any[] }),
     filteredIds.length
       ? supabase
@@ -61,12 +64,29 @@ export async function loadReportData(scope: ReportScope) {
   let insidePalestine = 0;
   let outsidePalestine = 0;
 
+  const WILLINGNESS_LABELS: Record<string, string> = {
+    yes: 'نعم',
+    depends: 'حسب طبيعة النشاط',
+    not_available: 'غير متاح حاليًا',
+  };
+  const byContributionWillingness: Record<string, number> = {};
+  const byContributionArea: Record<string, number> = {};
+
   for (const p of profiles ?? []) {
     if (!idSet.has(p.user_id)) continue;
     const cName = p.residence_country_id ? countryName[p.residence_country_id] ?? 'غير محدد' : 'غير محدد';
     byCountry[cName] = (byCountry[cName] ?? 0) + 1;
     if (p.residence_country_id && palestineId && p.residence_country_id === palestineId) insidePalestine++;
     else if (p.residence_country_id) outsidePalestine++;
+
+    const willingnessKey = p.future_contribution_willingness
+      ? WILLINGNESS_LABELS[p.future_contribution_willingness] ?? 'غير محدد'
+      : 'غير محدد';
+    byContributionWillingness[willingnessKey] = (byContributionWillingness[willingnessKey] ?? 0) + 1;
+
+    for (const area of p.future_contribution_areas ?? []) {
+      byContributionArea[area] = (byContributionArea[area] ?? 0) + 1;
+    }
   }
 
   for (const p of profs ?? []) {
@@ -92,6 +112,8 @@ export async function loadReportData(scope: ReportScope) {
     outsidePalestine,
     byQualification,
     byExperience,
+    byContributionWillingness,
+    byContributionArea,
     countOfRecords: filteredIds.length,
   };
 }

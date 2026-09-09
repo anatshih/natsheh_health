@@ -87,6 +87,16 @@ export default async function ReportsPage({
           ['غير محدد', data.byExperience.unknown],
         ]}
       />
+
+      <ReportTable
+        title="المتاحون للمساهمة الصحية المستقبلية (القسم 16)"
+        rows={Object.entries(data.byContributionWillingness).sort((a, b) => b[1] - a[1])}
+      />
+
+      <ReportTable
+        title="مجالات المساهمة الأكثر طلبًا"
+        rows={Object.entries(data.byContributionArea).sort((a, b) => b[1] - a[1])}
+      />
     </div>
   );
 }

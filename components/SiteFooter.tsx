@@ -18,6 +18,9 @@ export default function SiteFooter() {
           <Link href="/stats" className="hover:text-primary">
             الإحصاءات
           </Link>
+          <Link href="/about" className="hover:text-primary">
+            عن الدليل
+          </Link>
           <Link href="/login" className="hover:text-primary">
             تسجيل الدخول
           </Link>
