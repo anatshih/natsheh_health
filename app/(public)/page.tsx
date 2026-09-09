@@ -42,7 +42,7 @@ export default function HomePage() {
         <p className="font-bold text-slate-800">
           وجودك في الدليل يثري هذه المنظومة؛ سجّل بياناتك وكن جزءًا من شبكة تجمع
           كفاءات عائلة النتشة الصحية، وتدعم تطورها وعطاءها لخدمة العائلة والمجتمع.{' '}
-          <strong className="font-extrabold text-primary">
+          <strong className="font-extrabold text-slate-900">
             بإشراف مجلس عائلة النتشة ومجلس النقباء – الخليل، فلسطين.
           </strong>
         </p>
