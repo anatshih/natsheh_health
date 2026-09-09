@@ -56,6 +56,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin/password-resets" className="hover:text-primary">
               استعادة الحسابات
             </Link>
+            <Link href="/admin/statistics" className="hover:text-primary">
+              الإحصائيات
+            </Link>
             <Link href="/admin/reports" className="hover:text-primary">
               التقارير
             </Link>

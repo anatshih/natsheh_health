@@ -36,31 +36,38 @@ export async function loadReportData(scope: ReportScope) {
   const filteredIds = (statuses ? rows.filter((u) => statuses.includes(u.status)) : rows).map((u) => u.id);
   const idSet = new Set(filteredIds);
 
-  const [{ data: profiles }, { data: profs }, { data: countries }, { data: categories }] = await Promise.all([
-    filteredIds.length
-      ? supabase
-          .from('profiles')
-          .select('user_id, residence_country_id, future_contribution_willingness, future_contribution_areas')
-          .in('user_id', filteredIds)
-      : Promise.resolve({ data: [] as any[] }),
-    filteredIds.length
-      ? supabase
-          .from('professional_profiles')
-          .select('user_id, specialty_category_id, qualification, years_experience')
-          .in('user_id', filteredIds)
-      : Promise.resolve({ data: [] as any[] }),
-    supabase.from('countries').select('id, name_ar, iso_code'),
-    supabase.from('specialty_categories').select('id, name'),
-  ]);
+  const [{ data: profiles }, { data: profs }, { data: countries }, { data: categories }, { data: branches }] =
+    await Promise.all([
+      filteredIds.length
+        ? supabase
+            .from('profiles')
+            .select(
+              'user_id, residence_country_id, family_branch_id, future_contribution_willingness, future_contribution_areas'
+            )
+            .in('user_id', filteredIds)
+        : Promise.resolve({ data: [] as any[] }),
+      filteredIds.length
+        ? supabase
+            .from('professional_profiles')
+            .select('user_id, specialty_category_id, qualification, years_experience, workplace_type')
+            .in('user_id', filteredIds)
+        : Promise.resolve({ data: [] as any[] }),
+      supabase.from('countries').select('id, name_ar, iso_code'),
+      supabase.from('specialty_categories').select('id, name'),
+      supabase.from('family_branches').select('id, name'),
+    ]);
 
   const countryName = Object.fromEntries((countries ?? []).map((c: any) => [c.id, c.name_ar]));
   const palestineId = (countries ?? []).find((c: any) => c.iso_code === 'PS')?.id;
   const categoryName = Object.fromEntries((categories ?? []).map((c: any) => [c.id, c.name]));
+  const branchName = Object.fromEntries((branches ?? []).map((b: any) => [b.id, b.name]));
 
   const byCategory: Record<string, number> = {};
   const byCountry: Record<string, number> = {};
   const byQualification: Record<string, number> = {};
   const byExperience = { under5: 0, mid5to15: 0, over15: 0, unknown: 0 };
+  const byFamilyBranch: Record<string, number> = {};
+  const byWorkplaceType: Record<string, number> = {};
   let insidePalestine = 0;
   let outsidePalestine = 0;
 
@@ -87,6 +94,9 @@ export async function loadReportData(scope: ReportScope) {
     for (const area of p.future_contribution_areas ?? []) {
       byContributionArea[area] = (byContributionArea[area] ?? 0) + 1;
     }
+
+    const bName = p.family_branch_id ? branchName[p.family_branch_id] ?? 'غير محدد' : 'غير محدد';
+    byFamilyBranch[bName] = (byFamilyBranch[bName] ?? 0) + 1;
   }
 
   for (const p of profs ?? []) {
@@ -101,6 +111,9 @@ export async function loadReportData(scope: ReportScope) {
     else if (p.years_experience < 5) byExperience.under5++;
     else if (p.years_experience <= 15) byExperience.mid5to15++;
     else byExperience.over15++;
+
+    const wName = p.workplace_type?.trim() || 'غير محدد';
+    byWorkplaceType[wName] = (byWorkplaceType[wName] ?? 0) + 1;
   }
 
   return {
@@ -114,8 +127,151 @@ export async function loadReportData(scope: ReportScope) {
     byExperience,
     byContributionWillingness,
     byContributionArea,
+    byFamilyBranch,
+    byWorkplaceType,
     countOfRecords: filteredIds.length,
   };
 }
 
 export type ReportData = Awaited<ReturnType<typeof loadReportData>>;
+
+// ----------------------------------------------------------------------------
+// "التقارير" (بيانات تفصيلية قابلة للتصفية بمعايير متعددة الاختيار)، بخلاف
+// "الإحصائيات" أعلاه (أعداد مجمّعة فقط). راجع app/admin/reports/page.tsx.
+// ----------------------------------------------------------------------------
+
+export const STATUS_LABELS: Record<string, string> = {
+  draft: 'مسودة',
+  submitted: 'طلب جديد',
+  in_review: 'قيد المراجعة',
+  needs_completion: 'بحاجة إلى استكمال',
+  approved: 'معتمد',
+  published: 'منشور',
+  needs_update: 'يحتاج تحديثًا',
+  suspended: 'موقوف',
+  archived: 'مؤرشف',
+  rejected: 'مرفوض',
+};
+
+export const ALL_STATUSES = Object.keys(STATUS_LABELS);
+
+export type ReportFilters = {
+  statuses: string[];
+  branchIds: string[];
+  categoryIds: string[];
+  countryIds: string[];
+};
+
+export type DetailedRecord = {
+  userId: string;
+  status: string;
+  fullName: string;
+  idNumber: string;
+  branch: string;
+  branchId: string;
+  phone: string;
+  whatsapp: string;
+  email: string;
+  facebook: string;
+  country: string;
+  countryId: string;
+  city: string;
+  category: string;
+  categoryId: string;
+  specialty: string;
+  qualification: string;
+  workplaceType: string;
+  employer: string;
+  workplaceAddress: string;
+  yearsExperience: number | null;
+};
+
+function byUserId(rows: any[] | null): Record<string, any> {
+  return Object.fromEntries((rows ?? []).map((r) => [r.user_id, r]));
+}
+
+export async function loadDetailedRecords(filters: ReportFilters): Promise<DetailedRecord[]> {
+  const supabase = await createClient();
+
+  const { data: appUsers } = await supabase.from('app_users').select('id, status');
+  let rows = appUsers ?? [];
+  if (filters.statuses.length) rows = rows.filter((u) => filters.statuses.includes(u.status));
+  const ids = rows.map((u) => u.id);
+  if (ids.length === 0) return [];
+
+  const [{ data: identities }, { data: contacts }, { data: profiles }, { data: profs }, { data: categories }, { data: specialties }] =
+    await Promise.all([
+      supabase.from('identities').select('user_id, full_name_legal, id_number').in('user_id', ids),
+      supabase.from('contacts').select('user_id, phone, whatsapp, email, facebook').in('user_id', ids),
+      supabase
+        .from('profiles')
+        .select(
+          'user_id, family_branch_id, residence_country_id, family_branches(name), countries(name_ar), cities(name_ar)'
+        )
+        .in('user_id', ids),
+      supabase
+        .from('professional_profiles')
+        .select(
+          'user_id, specialty_category_id, specialty_id, qualification, employer, workplace_type, workplace_address, years_experience'
+        )
+        .in('user_id', ids),
+      supabase.from('specialty_categories').select('id, name'),
+      supabase.from('specialties').select('id, name'),
+    ]);
+
+  const categoryName = Object.fromEntries((categories ?? []).map((c: any) => [c.id, c.name]));
+  const specialtyName = Object.fromEntries((specialties ?? []).map((s: any) => [s.id, s.name]));
+
+  const identityMap = byUserId(identities);
+  const contactMap = byUserId(contacts);
+  const profileMap = byUserId(profiles);
+  const profMap = byUserId(profs);
+  const statusMap = Object.fromEntries(rows.map((u) => [u.id, u.status]));
+
+  let result: DetailedRecord[] = ids.map((id) => {
+    const identity: any = identityMap[id];
+    const contact: any = contactMap[id];
+    const profile: any = profileMap[id];
+    const prof: any = profMap[id];
+
+    return {
+      userId: id,
+      status: statusMap[id],
+      fullName: identity?.full_name_legal ?? '',
+      idNumber: identity?.id_number ?? '',
+      branch: profile?.family_branches?.name ?? '',
+      branchId: profile?.family_branch_id ?? '',
+      phone: contact?.phone ?? '',
+      whatsapp: contact?.whatsapp ?? '',
+      email: contact?.email ?? '',
+      facebook: contact?.facebook ?? '',
+      country: profile?.countries?.name_ar ?? '',
+      countryId: profile?.residence_country_id ?? '',
+      city: profile?.cities?.name_ar ?? '',
+      category: prof?.specialty_category_id ? categoryName[prof.specialty_category_id] ?? '' : '',
+      categoryId: prof?.specialty_category_id ?? '',
+      specialty: prof?.specialty_id ? specialtyName[prof.specialty_id] ?? '' : '',
+      qualification: prof?.qualification ?? '',
+      workplaceType: prof?.workplace_type ?? '',
+      employer: prof?.employer ?? '',
+      workplaceAddress: prof?.workplace_address ?? '',
+      yearsExperience: prof?.years_experience ?? null,
+    };
+  });
+
+  if (filters.branchIds.length) result = result.filter((r) => filters.branchIds.includes(r.branchId));
+  if (filters.countryIds.length) result = result.filter((r) => filters.countryIds.includes(r.countryId));
+  if (filters.categoryIds.length) result = result.filter((r) => filters.categoryIds.includes(r.categoryId));
+
+  return result;
+}
+
+export function parseReportFilters(searchParams: Record<string, string | string[] | undefined>): ReportFilters {
+  const asArray = (v: string | string[] | undefined): string[] => (v == null ? [] : Array.isArray(v) ? v : [v]);
+  return {
+    statuses: asArray(searchParams.status),
+    branchIds: asArray(searchParams.branch),
+    categoryIds: asArray(searchParams.category),
+    countryIds: asArray(searchParams.country),
+  };
+}
