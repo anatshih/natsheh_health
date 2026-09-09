@@ -38,6 +38,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin/applications" className="hover:text-primary">
               طلبات الانضمام
             </Link>
+            <Link href="/admin/specialties" className="hover:text-primary">
+              التخصصات
+            </Link>
+            <Link href="/admin/branches" className="hover:text-primary">
+              الفروع
+            </Link>
+            <Link href="/admin/locations" className="hover:text-primary">
+              الدول والمدن
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">
