@@ -1,37 +1,23 @@
 import Link from 'next/link';
 
-// تذييل موحّد بهوية الجهة المشرفة (القسم 2)، مع روابط سريعة وسياسة الخصوصية
-// (القسم 38) وحساب فيسبوك الرسمي للمجلس.
+// تذييل احترافي متعدد الأعمدة (نمط شائع في المواقع العالمية): عمود هوية
+// وتواصل، وعمود روابط سريعة، وعمود حساب وخصوصية، مع شريط سفلي لحقوق النشر.
 export default function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
     <footer className="border-t border-slate-200 bg-white">
-      <div className="mx-auto max-w-6xl px-6 py-8">
-        <nav className="mb-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs font-semibold text-slate-500">
-          <Link href="/directory" className="hover:text-primary">
-            دليل الكفاءات
-          </Link>
-          <Link href="/join" className="hover:text-primary">
-            طلب انضمام
-          </Link>
-          <Link href="/stats" className="hover:text-primary">
-            الإحصاءات
-          </Link>
-          <Link href="/about" className="hover:text-primary">
-            عن الدليل
-          </Link>
-          <Link href="/login" className="hover:text-primary">
-            تسجيل الدخول
-          </Link>
-          <Link href="/privacy" className="hover:text-primary">
-            سياسة الخصوصية والاستخدام
-          </Link>
-        </nav>
-
-        <div className="flex flex-col items-center gap-2 text-center">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="شعار مجلس عائلة النتشة" className="h-6 w-auto opacity-90" />
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <div className="grid gap-10 text-center sm:grid-cols-3 sm:text-right">
+          <div className="flex flex-col items-center gap-3 sm:items-start">
+            <div className="flex items-center gap-2.5">
+              <img src="/logo.png" alt="شعار مجلس عائلة النتشة" className="h-9 w-auto" />
+              <span className="text-sm font-bold text-slate-800">دليل الكفاءات الصحية</span>
+            </div>
+            <p className="max-w-xs text-xs leading-6 text-slate-500">
+              منصة إلكترونية يشرف عليها مجلس عائلة النتشة لحصر وتوثيق وعرض الكفاءات
+              الصحية من أبناء وبنات العائلة في الوطن والمهجر.
+            </p>
             <a
               href="https://www.facebook.com/natshehcouncil"
               target="_blank"
@@ -42,6 +28,42 @@ export default function SiteFooter() {
               <FacebookIcon />
             </a>
           </div>
+
+          <div className="flex flex-col items-center gap-2.5 sm:items-start">
+            <h3 className="mb-1 text-xs font-bold uppercase tracking-wide text-slate-400">
+              روابط سريعة
+            </h3>
+            <Link href="/" className="text-xs font-semibold text-slate-600 hover:text-primary">
+              الرئيسية
+            </Link>
+            <Link href="/directory" className="text-xs font-semibold text-slate-600 hover:text-primary">
+              دليل الكفاءات
+            </Link>
+            <Link href="/join" className="text-xs font-semibold text-slate-600 hover:text-primary">
+              طلب انضمام
+            </Link>
+            <Link href="/stats" className="text-xs font-semibold text-slate-600 hover:text-primary">
+              الإحصاءات
+            </Link>
+            <Link href="/about" className="text-xs font-semibold text-slate-600 hover:text-primary">
+              عن الدليل
+            </Link>
+          </div>
+
+          <div className="flex flex-col items-center gap-2.5 sm:items-start">
+            <h3 className="mb-1 text-xs font-bold uppercase tracking-wide text-slate-400">
+              الحساب والخصوصية
+            </h3>
+            <Link href="/login" className="text-xs font-semibold text-slate-600 hover:text-primary">
+              تسجيل الدخول
+            </Link>
+            <Link href="/privacy" className="text-xs font-semibold text-slate-600 hover:text-primary">
+              سياسة الخصوصية والاستخدام
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-10 flex flex-col items-center gap-1 border-t border-slate-100 pt-6 text-center">
           <p className="text-xs font-semibold text-slate-700">
             المجلس العائلي لعائلة النتشة — فلسطين، الخليل
           </p>
