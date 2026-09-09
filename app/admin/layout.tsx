@@ -59,6 +59,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin/deletion-requests" className="hover:text-primary">
               طلبات الحذف
             </Link>
+            <Link href="/admin/users" className="hover:text-primary">
+              المستخدمون
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">
