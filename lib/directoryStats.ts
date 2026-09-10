@@ -26,49 +26,72 @@ export async function loadRecentlyJoined(limit?: number) {
 
 export type RecentPerson = Awaited<ReturnType<typeof loadRecentlyJoined>>['people'][number];
 
+export type ActiveDirectoryFilters = {
+  category?: string[];
+  specialty?: string[];
+  country?: string[];
+  city?: string[];
+};
+
+type StatsRow = {
+  specialty: string | null;
+  specialty_category: string | null;
+  residence_country: string | null;
+  residence_city: string | null;
+};
+
+// فلترة متتالية (cascading): يحسب توزيع "field" فقط من السجلات المطابقة
+// لبقية الفلاتر المفعّلة حاليًا (باستثناء فلتر "field" نفسه) — بحيث تعكس
+// خيارات وأعداد كل مجموعة تصفية أثر بقية المجموعات المختارة، لا الإجمالي
+// العام دائمًا.
+function countByExcluding(
+  rows: StatsRow[],
+  field: keyof StatsRow,
+  filters: ActiveDirectoryFilters,
+  excludeKey: keyof ActiveDirectoryFilters
+): [string, number][] {
+  const counts = new Map<string, number>();
+  for (const r of rows) {
+    if (excludeKey !== 'category' && filters.category?.length && !filters.category.includes(r.specialty_category ?? ''))
+      continue;
+    if (excludeKey !== 'specialty' && filters.specialty?.length && !filters.specialty.includes(r.specialty ?? ''))
+      continue;
+    if (excludeKey !== 'country' && filters.country?.length && !filters.country.includes(r.residence_country ?? ''))
+      continue;
+    if (excludeKey !== 'city' && filters.city?.length && !filters.city.includes(r.residence_city ?? '')) continue;
+
+    const value = r[field];
+    if (value) counts.set(value, (counts.get(value) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+}
+
 // إحصاءات مجمّعة من الدليل العام فقط (directory_public) — لا تكشف أي بيانات
 // شخصية، مناسبة للعرض العام (القسم 31) ولشريط الإحصاءات في صفحة الدليل.
-export async function loadDirectoryStats() {
+// الأرقام الإجمالية (totalCount وما شابه) تبقى عامة دائمًا بصرف النظر عن
+// activeFilters — فقط قوائم التصفية (topCategories وما شابه) تتفاعل معها.
+export async function loadDirectoryStats(activeFilters: ActiveDirectoryFilters = {}) {
   const supabase = await createClient();
   const { data: rows } = await supabase
     .from('directory_public')
     .select('specialty, specialty_category, residence_country, residence_city');
 
-  const totalCount = rows?.length ?? 0;
-  const countryCount = new Set((rows ?? []).map((r) => r.residence_country).filter(Boolean)).size;
-
-  const specialtyCounts = new Map<string, number>();
-  const categoryCounts = new Map<string, number>();
-  const countryCounts = new Map<string, number>();
-  const cityCounts = new Map<string, number>();
-  let insideCount = 0;
-
-  for (const r of rows ?? []) {
-    if (r.specialty) {
-      specialtyCounts.set(r.specialty, (specialtyCounts.get(r.specialty) ?? 0) + 1);
-    }
-    if (r.specialty_category) {
-      categoryCounts.set(r.specialty_category, (categoryCounts.get(r.specialty_category) ?? 0) + 1);
-    }
-    if (r.residence_country) {
-      countryCounts.set(r.residence_country, (countryCounts.get(r.residence_country) ?? 0) + 1);
-      if (r.residence_country === 'فلسطين') insideCount++;
-    }
-    if (r.residence_city) {
-      cityCounts.set(r.residence_city, (cityCounts.get(r.residence_city) ?? 0) + 1);
-    }
-  }
+  const allRows = rows ?? [];
+  const totalCount = allRows.length;
+  const countryCount = new Set(allRows.map((r) => r.residence_country).filter(Boolean)).size;
+  const specialtyCount = new Set(allRows.map((r) => r.specialty).filter(Boolean)).size;
+  const insideCount = allRows.filter((r) => r.residence_country === 'فلسطين').length;
 
   return {
     totalCount,
     countryCount,
-    specialtyCount: specialtyCounts.size,
+    specialtyCount,
     insideCount,
     outsideCount: totalCount - insideCount,
-    topSpecialties: [...specialtyCounts.entries()].sort((a, b) => b[1] - a[1]),
-    topCategories: [...categoryCounts.entries()].sort((a, b) => b[1] - a[1]),
-    topCountries: [...countryCounts.entries()].sort((a, b) => b[1] - a[1]),
-    topCities: [...cityCounts.entries()].sort((a, b) => b[1] - a[1]),
+    topSpecialties: countByExcluding(allRows, 'specialty', activeFilters, 'specialty'),
+    topCategories: countByExcluding(allRows, 'specialty_category', activeFilters, 'category'),
+    topCountries: countByExcluding(allRows, 'residence_country', activeFilters, 'country'),
+    topCities: countByExcluding(allRows, 'residence_city', activeFilters, 'city'),
   };
 }
 

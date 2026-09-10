@@ -68,7 +68,12 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
   const [{ data: results, error, count }, stats, { people: recentlyJoined, totalCount: recentTotal }] =
     await Promise.all([
       query.range((rawPage - 1) * PAGE_SIZE, rawPage * PAGE_SIZE - 1),
-      loadDirectoryStats(),
+      loadDirectoryStats({
+        category: selectedCategories,
+        specialty: selectedSpecialties,
+        country: selectedCountries,
+        city: selectedCities,
+      }),
       loadRecentlyJoined(RECENT_LIMIT),
     ]);
 
@@ -77,9 +82,9 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
   const page = Math.min(rawPage, totalPages);
 
-  // الترتيب هنا مقصود: أول مجموعتين (المجال الصحي، التخصص) تُفتحان افتراضيًا
-  // في DirectoryFilters (تعتمد على أول عنصرين في هذه المصفوفة)، بينما
-  // الدولة والمدينة تبقيان مطويتين.
+  // كل مجموعة هنا شريحة منفصلة في الشريط الأفقي (DirectoryFilters)؛ خياراتها
+  // وأعدادها متتالية (cascading) — محسوبة بناءً على بقية الفلاتر المفعّلة
+  // حاليًا (loadDirectoryStats أعلاه)، لا الإجمالي العام دائمًا.
   const facets = [
     { paramKey: 'category' as const, title: 'المجال الصحي', options: topCategories },
     { paramKey: 'specialty' as const, title: 'التخصص', options: topSpecialties },
@@ -98,7 +103,7 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
 
         <DirectoryStatsBanner totalCount={totalCount} specialtyCount={specialtyCount} countryCount={countryCount} />
 
-        <form className="mb-6 flex max-w-md gap-2">
+        <form className="mb-4 flex max-w-md gap-2">
           <input
             type="text"
             name="q"
@@ -111,6 +116,8 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
             بحث
           </button>
         </form>
+
+        {!error && !isDirectoryEmpty && <DirectoryFilters facets={facets} />}
 
         {!error && !isDirectoryEmpty && (
           <RecentlyJoinedSection people={recentlyJoined} hasMore={recentTotal > recentlyJoined.length} />
@@ -125,28 +132,22 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
         {!error && isDirectoryEmpty && <EmptyDirectoryState />}
 
         {!error && !isDirectoryEmpty && (
-          <div className="flex flex-col gap-6 md:flex-row">
-            <aside className="w-full shrink-0 md:w-56">
-              <DirectoryFilters facets={facets} />
-            </aside>
+          <div className="min-w-0">
+            {results && results.length > 0 && (
+              <p className="mb-3 text-xs text-slate-500">
+                <strong className="text-slate-700">{count}</strong> نتيجة مطابقة
+              </p>
+            )}
 
-            <div className="min-w-0 flex-1">
-              {results && results.length > 0 && (
-                <p className="mb-3 text-xs text-slate-500">
-                  <strong className="text-slate-700">{count}</strong> نتيجة مطابقة
-                </p>
-              )}
+            {(!results || results.length === 0) && <NoSearchResults query={q} />}
 
-              {(!results || results.length === 0) && <NoSearchResults query={q} />}
-
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {results?.map((row: DirectoryRow) => (
-                  <DirectoryCard key={row.profile_id} {...row} />
-                ))}
-              </div>
-
-              <Pagination page={page} totalPages={totalPages} />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {results?.map((row: DirectoryRow) => (
+                <DirectoryCard key={row.profile_id} {...row} />
+              ))}
             </div>
+
+            <Pagination page={page} totalPages={totalPages} />
           </div>
         )}
       </div>
