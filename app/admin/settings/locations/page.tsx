@@ -45,7 +45,7 @@ export default async function LocationsPage() {
                   <form action={toggleCountry}>
                     <input type="hidden" name="id" value={c.id} />
                     <input type="hidden" name="nextActive" value={(!c.is_active).toString()} />
-                    <ToggleSwitch active={c.is_active} activeLabel="نشطة" inactiveLabel="معطّلة" />
+                    <ToggleSwitch active={c.is_active} activeLabel="نشطة" inactiveLabel="معطّلة" itemName={c.name_ar} />
                   </form>
                 )}
               </div>
@@ -78,7 +78,7 @@ export default async function LocationsPage() {
                   <form action={toggleCity}>
                     <input type="hidden" name="id" value={c.id} />
                     <input type="hidden" name="nextActive" value={(!c.is_active).toString()} />
-                    <ToggleSwitch active={c.is_active} activeLabel="نشطة" inactiveLabel="معطّلة" />
+                    <ToggleSwitch active={c.is_active} activeLabel="نشطة" inactiveLabel="معطّلة" itemName={c.name_ar} />
                   </form>
                 )}
               </div>

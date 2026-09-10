@@ -94,12 +94,15 @@ export default async function ReportsPage({
               <Th>الهاتف</Th>
               <Th>الواتساب</Th>
               <Th>البريد الإلكتروني</Th>
+              <Th>حساب فيسبوك</Th>
               <Th>الدولة</Th>
               <Th>المدينة</Th>
               <Th>المجال الصحي</Th>
               <Th>التخصص</Th>
               <Th>المؤهل</Th>
+              <Th>نوع مكان العمل</Th>
               <Th>جهة العمل</Th>
+              <Th>الموقع</Th>
               <Th>سنوات الخبرة</Th>
               <Th>الاستعداد للمساهمة المستقبلية</Th>
               <Th>مجالات المساهمة</Th>
@@ -109,7 +112,7 @@ export default async function ReportsPage({
           <tbody>
             {records.length === 0 ? (
               <tr>
-                <td colSpan={16} className="p-6 text-center text-slate-400">
+                <td colSpan={19} className="p-6 text-center text-slate-400">
                   لا توجد سجلات مطابقة للفلاتر المحددة.
                 </td>
               </tr>
@@ -122,12 +125,15 @@ export default async function ReportsPage({
                   <Td>{r.phone}</Td>
                   <Td>{r.whatsapp}</Td>
                   <Td>{r.email}</Td>
+                  <Td>{r.facebook}</Td>
                   <Td>{r.country}</Td>
                   <Td>{r.city}</Td>
                   <Td>{r.category}</Td>
                   <Td>{r.specialty}</Td>
                   <Td>{r.qualification}</Td>
+                  <Td>{r.workplaceType}</Td>
                   <Td>{r.employer}</Td>
+                  <Td>{r.workplaceAddress}</Td>
                   <Td>{r.yearsExperience ?? ''}</Td>
                   <Td>{r.contributionWillingness}</Td>
                   <Td>{r.contributionAreas}</Td>

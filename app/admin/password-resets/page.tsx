@@ -59,6 +59,14 @@ export default function PasswordResetsPage() {
   }, []);
 
   async function handleResolve(req: Request) {
+    const name = details[req.user_id]?.name ?? 'هذا الحساب';
+    if (
+      !confirm(
+        `هل أنت متأكد من تفعيل كلمة مرور جديدة لحساب "${name}"؟ كلمة المرور الحالية ستُلغى فورًا ولن تعمل بعد الآن.`
+      )
+    ) {
+      return;
+    }
     setBusyId(req.id);
     const result = await resolvePasswordReset(req.id, req.user_id);
     setBusyId(null);

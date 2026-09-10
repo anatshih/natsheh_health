@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { reviewApplication } from '../actions';
+import ConfirmSubmitButton from '@/components/ConfirmSubmitButton';
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'مسودة',
@@ -221,10 +222,27 @@ export default async function ApplicationDetailPage({
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <ActionButton name="approve" label="اعتماد" disabled={!canDecide} />
-            <ActionButton name="approve_publish" label="اعتماد ونشر" primary disabled={!canDecide} />
+            <ActionButton
+              name="approve"
+              label="اعتماد"
+              disabled={!canDecide}
+              confirmMessage={`هل تريد اعتماد طلب "${identity?.full_name_legal ?? 'هذا الشخص'}"؟`}
+            />
+            <ActionButton
+              name="approve_publish"
+              label="اعتماد ونشر"
+              primary
+              disabled={!canDecide}
+              confirmMessage={`هل تريد اعتماد ونشر طلب "${identity?.full_name_legal ?? 'هذا الشخص'}"؟ سيظهر ملفه فورًا في الدليل العام.`}
+            />
             <ActionButton name="request_completion" label="طلب استكمال" disabled={!canDecide} />
-            <ActionButton name="reject" label="رفض" danger disabled={!canDecide} />
+            <ActionButton
+              name="reject"
+              label="رفض"
+              danger
+              disabled={!canDecide}
+              confirmMessage={`هل تريد رفض طلب "${identity?.full_name_legal ?? 'هذا الشخص'}"؟`}
+            />
           </div>
         </form>
       </Section>
@@ -256,27 +274,33 @@ function ActionButton({
   primary,
   danger,
   disabled,
+  confirmMessage,
 }: {
   name: string;
   label: string;
   primary?: boolean;
   danger?: boolean;
   disabled?: boolean;
+  confirmMessage?: string;
 }) {
+  const className = `rounded-lg px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${
+    primary
+      ? 'bg-primary text-white'
+      : danger
+        ? 'border border-red-300 text-red-700'
+        : 'border border-slate-300 text-slate-700'
+  }`;
+
+  if (confirmMessage) {
+    return (
+      <ConfirmSubmitButton name="action" value={name} disabled={disabled} className={className} confirmMessage={confirmMessage}>
+        {label}
+      </ConfirmSubmitButton>
+    );
+  }
+
   return (
-    <button
-      type="submit"
-      name="action"
-      value={name}
-      disabled={disabled}
-      className={`rounded-lg px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${
-        primary
-          ? 'bg-primary text-white'
-          : danger
-            ? 'border border-red-300 text-red-700'
-            : 'border border-slate-300 text-slate-700'
-      }`}
-    >
+    <button type="submit" name="action" value={name} disabled={disabled} className={className}>
       {label}
     </button>
   );

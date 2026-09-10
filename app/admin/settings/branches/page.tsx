@@ -55,7 +55,7 @@ export default async function BranchesPage() {
                 <form action={toggleBranch}>
                   <input type="hidden" name="id" value={b.id} />
                   <input type="hidden" name="nextActive" value={(!b.is_active).toString()} />
-                  <ToggleSwitch active={b.is_active} />
+                  <ToggleSwitch active={b.is_active} itemName={b.name} />
                 </form>
               )}
             </div>

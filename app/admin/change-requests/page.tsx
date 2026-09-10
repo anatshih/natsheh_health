@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { approveChangeRequest, rejectChangeRequest } from './actions';
+import ConfirmSubmitButton from '@/components/ConfirmSubmitButton';
 
 const FIELD_LABELS: Record<string, string> = {
   display_name: 'الاسم الظاهر للعامة',
@@ -95,21 +96,21 @@ export default async function ChangeRequestsPage() {
                   <input type="hidden" name="userId" value={r.user_id} />
                   <input type="hidden" name="fieldName" value={r.field_name} />
                   <input type="hidden" name="newValue" value={r.new_value ?? ''} />
-                  <button
-                    type="submit"
+                  <ConfirmSubmitButton
+                    confirmMessage={`هل تريد اعتماد هذا التعديل على ملف "${nameByUserId[r.user_id] ?? 'هذا الشخص'}"؟ سيُطبَّق فورًا على الملف المنشور.`}
                     className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white"
                   >
                     اعتماد التعديل
-                  </button>
+                  </ConfirmSubmitButton>
                 </form>
                 <form action={rejectChangeRequest}>
                   <input type="hidden" name="id" value={r.id} />
-                  <button
-                    type="submit"
+                  <ConfirmSubmitButton
+                    confirmMessage="هل تريد رفض طلب التعديل هذا؟"
                     className="rounded-lg border border-red-300 px-4 py-2 text-xs font-semibold text-red-700"
                   >
                     رفض
-                  </button>
+                  </ConfirmSubmitButton>
                 </form>
               </div>
             )}

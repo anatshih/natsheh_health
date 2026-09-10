@@ -1,15 +1,35 @@
+'use client';
+
 // زر تبديل بشكل مفتاح (Switch) بدل شارة نصية، مع نص توضيحي دائمًا بجانبه
-// حتى لا يعتمد الفهم على اللون وحده (القسم 51 من الوثيقة).
-export default function ToggleSwitch({ active, activeLabel = 'نشط', inactiveLabel = 'معطّل' }: {
+// حتى لا يعتمد الفهم على اللون وحده (القسم 51 من الوثيقة). يطلب تأكيدًا
+// فقط عند التعطيل (لا عند إعادة التفعيل) لأنه قد يُخفي عناصر مرتبطة كثيرة
+// دفعة واحدة (تخصص/فرع/دولة كاملة)، بخلاف بقية أزرار "تعطيل" في اللوحة.
+export default function ToggleSwitch({
+  active,
+  activeLabel = 'نشط',
+  inactiveLabel = 'معطّل',
+  itemName,
+}: {
   active: boolean;
   activeLabel?: string;
   inactiveLabel?: string;
+  itemName?: string;
 }) {
+  function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
+    if (!active) return; // إعادة التفعيل لا تحتاج تأكيدًا
+    const name = itemName ?? 'هذا العنصر';
+    if (!confirm(`هل تريد تعطيل "${name}"؟ سيختفي فورًا من كل القوائم والفلاتر المرتبطة به.`)) {
+      e.preventDefault();
+    }
+  }
+
   return (
     <button
       type="submit"
       role="switch"
       aria-checked={active}
+      aria-label={itemName ? `${itemName}: ${active ? activeLabel : inactiveLabel}` : undefined}
+      onClick={handleClick}
       className="inline-flex shrink-0 items-center gap-2.5 whitespace-nowrap"
     >
       <span

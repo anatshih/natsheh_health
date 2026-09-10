@@ -72,7 +72,7 @@ export default function SpecialtiesPage() {
                   >
                     <input type="hidden" name="id" value={c.id} />
                     <input type="hidden" name="nextActive" value={(!c.is_active).toString()} />
-                    <ToggleSwitch active={c.is_active} />
+                    <ToggleSwitch active={c.is_active} itemName={c.name} />
                   </form>
                 )}
               </div>
@@ -130,7 +130,7 @@ export default function SpecialtiesPage() {
                     >
                       <input type="hidden" name="id" value={s.id} />
                       <input type="hidden" name="nextActive" value={(!s.is_active).toString()} />
-                      <ToggleSwitch active={s.is_active} />
+                      <ToggleSwitch active={s.is_active} itemName={s.name} />
                     </form>
                   )}
                 </div>
