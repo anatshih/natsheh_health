@@ -21,6 +21,18 @@ type DirectoryRow = {
   last_updated_at: string | null;
 };
 
+type RecentPerson = {
+  profile_id: string;
+  display_name: string;
+  photo_url: string | null;
+  residence_country: string | null;
+  residence_city: string | null;
+  specialty_category: string | null;
+  specialty: string | null;
+  years_experience: number | null;
+  last_updated_at: string | null;
+};
+
 type SearchParams = {
   q?: string;
   category?: string | string[];
@@ -30,6 +42,7 @@ type SearchParams = {
 };
 
 const NEW_WINDOW_DAYS = 30;
+const RECENT_LIMIT = 6;
 const PAGE_SIZE = 12;
 
 const EXP_BUCKETS: { key: 'under5' | 'mid5to15' | 'over15'; label: string }[] = [
@@ -75,9 +88,23 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
 
   const rawPage = Math.max(1, parseInt(sp.page ?? '1', 10) || 1);
 
-  const [{ data: results, error, count }, stats] = await Promise.all([
+  // قسم "انضموا حديثًا" مستقل تمامًا عن فلاتر البحث الحالية — يُظهر دائمًا
+  // آخر من انضم إلى الدليل بصرف النظر عمّا يصفّيه الزائر، بحد أقصى 6 أسماء
+  // حتى لا يتحوّل لشبكة كاملة إن زاد عدد المنضمين حديثًا مع نمو الدليل.
+  const recentCutoff = new Date(Date.now() - NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const recentQuery = supabase
+    .from('directory_public')
+    .select(
+      'profile_id, display_name, photo_url, residence_country, residence_city, specialty_category, specialty, years_experience, last_updated_at'
+    )
+    .gte('last_updated_at', recentCutoff)
+    .order('last_updated_at', { ascending: false })
+    .limit(RECENT_LIMIT);
+
+  const [{ data: results, error, count }, stats, { data: recentlyJoined }] = await Promise.all([
     query.range((rawPage - 1) * PAGE_SIZE, rawPage * PAGE_SIZE - 1),
     loadDirectoryStats(),
+    recentQuery,
   ]);
 
   const { totalCount, countryCount, specialtyCount, topCategories, topCountries, experienceBuckets } = stats;
@@ -85,10 +112,6 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
   const page = Math.min(rawPage, totalPages);
   const hasActiveFilters = Boolean(q || selectedCategories.length || selectedCountries.length || selectedExp.length);
-
-  const now = Date.now();
-  const isNew = (dateStr: string | null) =>
-    !!dateStr && now - new Date(dateStr).getTime() < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
   // يبني رابط /directory مع تبديل قيمة واحدة ضمن فئة تصفية معيّنة (إضافة إن
   // كانت غائبة، إزالة إن كانت حاضرة)، مع الإبقاء على بقية الفلاتر كما هي
@@ -137,6 +160,8 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
             بحث
           </button>
         </form>
+
+        {!error && !isDirectoryEmpty && <RecentlyJoinedSection people={recentlyJoined ?? []} />}
 
         {error && (
           <p className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
@@ -224,32 +249,24 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
                         aria-hidden="true"
                       />
 
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <DirectoryAvatar
-                            photoUrl={row.photo_url}
-                            name={row.display_name}
-                            category={row.specialty_category}
-                            size={52}
-                          />
-                          <div className="min-w-0">
-                            <h2 className="truncate font-heading text-base font-bold">{row.display_name}</h2>
-                            {(row.residence_city || row.residence_country) && (
-                              <p className="flex items-center gap-1 text-xs text-slate-500">
-                                <PinIcon />
-                                <span className="truncate">
-                                  {[row.residence_city, row.residence_country].filter(Boolean).join('، ')}
-                                </span>
-                              </p>
-                            )}
-                          </div>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <DirectoryAvatar
+                          photoUrl={row.photo_url}
+                          name={row.display_name}
+                          category={row.specialty_category}
+                          size={52}
+                        />
+                        <div className="min-w-0">
+                          <h2 className="truncate font-heading text-base font-bold">{row.display_name}</h2>
+                          {(row.residence_city || row.residence_country) && (
+                            <p className="flex items-center gap-1 text-xs text-slate-500">
+                              <PinIcon />
+                              <span className="truncate">
+                                {[row.residence_city, row.residence_country].filter(Boolean).join('، ')}
+                              </span>
+                            </p>
+                          )}
                         </div>
-
-                        {isNew(row.last_updated_at) && (
-                          <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-[10px] font-bold text-accent">
-                            انضم حديثًا
-                          </span>
-                        )}
                       </div>
 
                       {row.specialty && (
@@ -322,6 +339,47 @@ function FilterOption({
       <span className={checked ? 'font-semibold text-primary' : ''}>{label}</span>
       <span className="mr-auto text-[11px] text-slate-400">{count}</span>
     </Link>
+  );
+}
+
+// قسم مستقل يبرز آخر من انضم إلى الدليل (30 يومًا كحد أقصى، و6 أسماء
+// كحد أعلى) بدل شارة "انضم حديثًا" داخل كل بطاقة — كانت الشارة تتصادم مع
+// الأسماء الطويلة، بينما هذا القسم له مساحته الخاصة تمامًا فلا تصادم ممكن،
+// وبطاقات الشبكة الرئيسية أسفله تبقى نظيفة بلا أي شارات إطلاقًا. حدّ جانبي
+// بلون accent مميّز (بدل لون التخصص) يُبقي معنى "جديد" واضحًا ومستقلاً عن
+// نظام تلوين التخصصات.
+function RecentlyJoinedSection({ people }: { people: RecentPerson[] }) {
+  if (people.length === 0) return null;
+
+  return (
+    <div className="mb-8">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs text-white">
+          ✨
+        </span>
+        <h2 className="font-display text-base font-bold text-slate-900">انضموا حديثًا</h2>
+      </div>
+      <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
+        {people.map((p) => (
+          <Link
+            key={p.profile_id}
+            href={`/directory/${p.profile_id}`}
+            className="flex w-56 shrink-0 items-center gap-3 rounded-xl border-r-4 border-accent bg-white p-3 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <DirectoryAvatar
+              photoUrl={p.photo_url}
+              name={p.display_name}
+              category={p.specialty_category}
+              size={40}
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold text-slate-900">{p.display_name}</p>
+              {p.specialty && <p className="truncate text-xs text-slate-500">{p.specialty}</p>}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }
 
