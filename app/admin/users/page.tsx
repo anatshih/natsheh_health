@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { createStaffAccount, updateStaffRole } from './actions';
+import { ROLE_LABELS } from '@/lib/admin-labels';
 
 type StaffRow = {
   id: string;
@@ -11,11 +12,6 @@ type StaffRow = {
   staff_name: string | null;
   staff_email: string | null;
   created_at: string;
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  admin: 'مدير نظام',
-  reviewer: 'مراجع',
 };
 
 // شاشة "المستخدمون" (القسم 28): إنشاء حسابات فريق (مدير/مراجع) وإدارة صلاحياتها.

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { suspendAccount, reactivateAccount, adminDeleteAccount } from './actions';
+import { suspendAccount, reactivateAccount, adminDeleteAccount, publishAccount } from './actions';
 
 // نسخة محلية من تسميات الحالات (بدل الاستيراد من lib/reports.ts) لأن ذلك
 // الملف يستورد عميل Supabase الخاص بالخادم (next/headers)، وهذا مكوّن عميل.
@@ -27,6 +27,10 @@ type Row = {
   created_at: string;
   full_name_legal: string | null;
 };
+
+// طلبات لم تُراجَع بعد يجب أن تمر عبر شاشة المراجعة الرسمية (اعتماد/رفض/طلب
+// استكمال)، لا أن تُعطَّل أو تُحذف مباشرة من هنا متجاوزةً تلك المراجعة.
+const PENDING_REVIEW_STATUSES = new Set(['submitted', 'in_review', 'needs_completion']);
 
 const STATUS_BADGE: Record<string, string> = {
   published: 'bg-emerald-50 text-emerald-700',
@@ -98,6 +102,15 @@ export default function RegistrantsList() {
     const fd = new FormData();
     fd.set('userId', id);
     await reactivateAccount(fd);
+    setBusyId(null);
+    load();
+  }
+
+  async function handlePublish(id: string) {
+    setBusyId(id);
+    const fd = new FormData();
+    fd.set('userId', id);
+    await publishAccount(fd);
     setBusyId(null);
     load();
   }
@@ -174,6 +187,13 @@ export default function RegistrantsList() {
                     <td className="px-4 py-2.5">
                       {r.status === 'archived' ? (
                         <span className="text-xs text-slate-400">لا يوجد إجراء (تم الحذف)</span>
+                      ) : PENDING_REVIEW_STATUSES.has(r.status) ? (
+                        <Link
+                          href={`/admin/applications/${r.id}`}
+                          className="text-xs font-semibold text-primary hover:underline"
+                        >
+                          مراجعة الطلب ›
+                        </Link>
                       ) : (
                       <div className="flex gap-3">
                         {r.status === 'suspended' ? (
@@ -191,6 +211,15 @@ export default function RegistrantsList() {
                             className="text-xs font-semibold text-amber-700 hover:underline disabled:opacity-60"
                           >
                             تعطيل
+                          </button>
+                        )}
+                        {r.status === 'approved' && (
+                          <button
+                            onClick={() => handlePublish(r.id)}
+                            disabled={busyId === r.id}
+                            className="text-xs font-semibold text-emerald-700 hover:underline disabled:opacity-60"
+                          >
+                            نشر
                           </button>
                         )}
                         <button

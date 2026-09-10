@@ -59,6 +59,20 @@ export async function resolvePasswordReset(
 export async function rejectPasswordReset(formData: FormData) {
   const requestId = formData.get('requestId') as string;
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: me } = await supabase
+    .from('app_users')
+    .select('role')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!me || me.role !== 'admin') return; // نفس قيد resolvePasswordReset أعلاه — كان مفقودًا هنا فقط
+
   await supabase
     .from('password_reset_requests')
     .update({ status: 'rejected', resolved_at: new Date().toISOString() })

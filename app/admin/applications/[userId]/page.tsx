@@ -223,7 +223,6 @@ export default async function ApplicationDetailPage({
           <div className="flex flex-wrap gap-2">
             <ActionButton name="approve" label="اعتماد" disabled={!canDecide} />
             <ActionButton name="approve_publish" label="اعتماد ونشر" primary disabled={!canDecide} />
-            <ActionButton name="approve_no_publish" label="اعتماد دون نشر" disabled={!canDecide} />
             <ActionButton name="request_completion" label="طلب استكمال" disabled={!canDecide} />
             <ActionButton name="reject" label="رفض" danger disabled={!canDecide} />
           </div>

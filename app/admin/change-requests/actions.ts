@@ -36,7 +36,7 @@ export async function approveChangeRequest(formData: FormData) {
 
   const supabase = await createClient();
   const me = await getReviewer(supabase);
-  if (!me) return;
+  if (!me || me.role !== 'admin') return; // الاعتماد مقصور على المدير فعليًا لا في الواجهة فقط
 
   if (PROFILE_FIELDS.has(fieldName)) {
     await supabase
@@ -70,7 +70,7 @@ export async function rejectChangeRequest(formData: FormData) {
   const id = formData.get('id') as string;
   const supabase = await createClient();
   const me = await getReviewer(supabase);
-  if (!me) return;
+  if (!me || me.role !== 'admin') return; // الرفض مقصور على المدير فعليًا لا في الواجهة فقط
 
   await supabase
     .from('change_requests')

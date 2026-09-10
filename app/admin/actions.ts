@@ -46,7 +46,7 @@ export async function suspendAccount(formData: FormData) {
 }
 
 // إعادة تفعيل ملف موقوف سابقًا. يعيده إلى حالة "معتمد" (وليس "منشور"
-// تلقائيًا) ليقرر المراجع النشر من جديد عبر شاشة طلبات الانضمام المعتادة.
+// تلقائيًا) ليقرر المدير النشر من جديد بوعي عبر زر "نشر" أدناه.
 export async function reactivateAccount(formData: FormData) {
   const userId = formData.get('userId') as string;
 
@@ -59,6 +59,34 @@ export async function reactivateAccount(formData: FormData) {
   await supabase.from('audit_logs').insert({
     actor_id: me.id,
     action: 'reactivate_account',
+    target_table: 'app_users',
+    target_id: userId,
+    details: {},
+  });
+
+  revalidatePath('/admin');
+}
+
+// نشر ملف "معتمد" في الدليل العام. يسدّ فجوة كانت موجودة: شاشة "طلبات
+// الانضمام" تستبعد الحالة "معتمد" من استعلامها أصلاً، فلم يكن هناك أي
+// مكان فعلي لنشر ملف اعتُمد دون نشر فوري (أو أُعيد تفعيله من "موقوف").
+export async function publishAccount(formData: FormData) {
+  const userId = formData.get('userId') as string;
+
+  const supabase = await createClient();
+  const me = await requireAdmin(supabase);
+  if (!me) return;
+
+  await supabase.from('app_users').update({ status: 'published' }).eq('id', userId);
+
+  await supabase
+    .from('applications')
+    .update({ published_at: new Date().toISOString() })
+    .eq('user_id', userId);
+
+  await supabase.from('audit_logs').insert({
+    actor_id: me.id,
+    action: 'publish_account',
     target_table: 'app_users',
     target_id: userId,
     details: {},

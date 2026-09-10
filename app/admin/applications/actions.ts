@@ -4,15 +4,17 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
+// أُزيل "approve_no_publish" لأنه كان يؤدي لنفس نتيجة "approve" تمامًا
+// (لا فرق فعلي بينهما) — بقي في REVIEW_ACTION_LABELS بصفحة التفاصيل فقط
+// لعرض سجل مراجعات قديمة سُجِّلت بهذا الإجراء قبل الدمج.
 const STATUS_BY_ACTION: Record<string, string> = {
   approve: 'approved',
   approve_publish: 'published',
-  approve_no_publish: 'approved',
   request_completion: 'needs_completion',
   reject: 'rejected',
 };
 
-const TERMINAL_ACTIONS = new Set(['approve', 'approve_publish', 'approve_no_publish', 'reject']);
+const TERMINAL_ACTIONS = new Set(['approve', 'approve_publish', 'reject']);
 
 // ينفّذ قرار المراجعة (القسم 21). الاعتماد النهائي وتغيير الحالة مقصوران على
 // المدير عبر سياسة RLS على app_users؛ المراجع يمكنه الاطلاع فقط في هذا الإصدار.
