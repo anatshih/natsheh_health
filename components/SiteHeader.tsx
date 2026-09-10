@@ -40,7 +40,7 @@ export default async function SiteHeader() {
   }
 
   return (
-    <header className="relative border-b border-slate-200 bg-white">
+    <header className="relative bg-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
         <Link href="/" className="flex items-center gap-2.5">
           <img src="/logo.png" alt="شعار مجلس عائلة النتشة" className="h-10 w-auto" />
@@ -79,6 +79,25 @@ export default async function SiteHeader() {
 
         <MobileNav links={NAV_LINKS} accountHref={accountHref} accountLabel={accountLabel} />
       </div>
+
+      <TatreezStrip />
     </header>
+  );
+}
+
+// شريط زخرفي رفيع في أسفل الهيدر الأبيض نفسه (لا بعده)، مستوحى من غرزة
+// التطريز الفلسطيني (معيّن بخيط أزرق ونقطة حمراء) — يعمل كحد سفلي للهيدر
+// يفصله عن المحتوى الكريمي أسفله، بدل خط رمادي عادي أو شريط عائم بينهما.
+function TatreezStrip() {
+  return (
+    <svg className="block h-[10px] w-full" viewBox="0 0 400 14" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <pattern id="tatreez-strip" width="20" height="14" patternUnits="userSpaceOnUse">
+          <path d="M10 1 L19 7 L10 13 L1 7Z" fill="none" stroke="#005CB6" strokeWidth="1" opacity="0.45" />
+          <circle cx="10" cy="7" r="1.3" fill="#A8324A" opacity="0.75" />
+        </pattern>
+      </defs>
+      <rect width="400" height="14" fill="url(#tatreez-strip)" />
+    </svg>
   );
 }
