@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import DirectoryAvatar from '@/components/DirectoryAvatar';
+import DirectoryCard from '@/components/DirectoryCard';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import Pagination from '@/components/Pagination';
-import { loadDirectoryStats } from '@/lib/directoryStats';
-import { specialtyColor } from '@/lib/specialtyColors';
+import DirectoryAvatar from '@/components/DirectoryAvatar';
+import { loadDirectoryStats, loadRecentlyJoined, type RecentPerson } from '@/lib/directoryStats';
 
 type DirectoryRow = {
   profile_id: string;
@@ -21,18 +21,6 @@ type DirectoryRow = {
   last_updated_at: string | null;
 };
 
-type RecentPerson = {
-  profile_id: string;
-  display_name: string;
-  photo_url: string | null;
-  residence_country: string | null;
-  residence_city: string | null;
-  specialty_category: string | null;
-  specialty: string | null;
-  years_experience: number | null;
-  last_updated_at: string | null;
-};
-
 type SearchParams = {
   q?: string;
   category?: string | string[];
@@ -41,7 +29,6 @@ type SearchParams = {
   page?: string;
 };
 
-const NEW_WINDOW_DAYS = 30;
 const RECENT_LIMIT = 6;
 const PAGE_SIZE = 12;
 
@@ -90,22 +77,13 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
 
   // قسم "انضموا حديثًا" مستقل تمامًا عن فلاتر البحث الحالية — يُظهر دائمًا
   // آخر من انضم إلى الدليل بصرف النظر عمّا يصفّيه الزائر، بحد أقصى 6 أسماء
-  // حتى لا يتحوّل لشبكة كاملة إن زاد عدد المنضمين حديثًا مع نمو الدليل.
-  const recentCutoff = new Date(Date.now() - NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
-  const recentQuery = supabase
-    .from('directory_public')
-    .select(
-      'profile_id, display_name, photo_url, residence_country, residence_city, specialty_category, specialty, years_experience, last_updated_at'
-    )
-    .gte('last_updated_at', recentCutoff)
-    .order('last_updated_at', { ascending: false })
-    .limit(RECENT_LIMIT);
-
-  const [{ data: results, error, count }, stats, { data: recentlyJoined }] = await Promise.all([
-    query.range((rawPage - 1) * PAGE_SIZE, rawPage * PAGE_SIZE - 1),
-    loadDirectoryStats(),
-    recentQuery,
-  ]);
+  // في الصندوق المصغَّر (القائمة الكاملة في /directory/recent).
+  const [{ data: results, error, count }, stats, { people: recentlyJoined, totalCount: recentTotal }] =
+    await Promise.all([
+      query.range((rawPage - 1) * PAGE_SIZE, rawPage * PAGE_SIZE - 1),
+      loadDirectoryStats(),
+      loadRecentlyJoined(RECENT_LIMIT),
+    ]);
 
   const { totalCount, countryCount, specialtyCount, topCategories, topCountries, experienceBuckets } = stats;
   const isDirectoryEmpty = totalCount === 0;
@@ -161,7 +139,9 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
           </button>
         </form>
 
-        {!error && !isDirectoryEmpty && <RecentlyJoinedSection people={recentlyJoined ?? []} />}
+        {!error && !isDirectoryEmpty && (
+          <RecentlyJoinedSection people={recentlyJoined} hasMore={recentTotal > recentlyJoined.length} />
+        )}
 
         {error && (
           <p className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
@@ -236,61 +216,9 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
               {(!results || results.length === 0) && <NoSearchResults query={q} />}
 
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {results?.map((row: DirectoryRow) => {
-                  const color = specialtyColor(row.specialty_category);
-                  return (
-                    <article
-                      key={row.profile_id}
-                      className="relative flex flex-col gap-3 overflow-hidden rounded-xl border border-slate-200 bg-white p-5 pt-6 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-                    >
-                      <span
-                        className="absolute inset-x-0 top-0 h-1"
-                        style={{ background: color.solid }}
-                        aria-hidden="true"
-                      />
-
-                      <div className="flex min-w-0 items-center gap-3">
-                        <DirectoryAvatar
-                          photoUrl={row.photo_url}
-                          name={row.display_name}
-                          category={row.specialty_category}
-                          size={52}
-                        />
-                        <div className="min-w-0">
-                          <h2 className="truncate font-heading text-base font-bold">{row.display_name}</h2>
-                          {(row.residence_city || row.residence_country) && (
-                            <p className="flex items-center gap-1 text-xs text-slate-500">
-                              <PinIcon />
-                              <span className="truncate">
-                                {[row.residence_city, row.residence_country].filter(Boolean).join('، ')}
-                              </span>
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {row.specialty && (
-                        <span
-                          className="w-fit rounded-full px-3 py-1 text-xs font-semibold"
-                          style={{ background: color.soft, color: color.text }}
-                        >
-                          {row.specialty}
-                        </span>
-                      )}
-
-                      {row.years_experience != null && (
-                        <p className="text-xs text-slate-500">خبرة {row.years_experience} سنة</p>
-                      )}
-
-                      <Link
-                        href={`/directory/${row.profile_id}`}
-                        className="mt-1 rounded-lg border border-primary py-2 text-center text-xs font-semibold text-primary hover:bg-primary-soft"
-                      >
-                        عرض الملف المهني
-                      </Link>
-                    </article>
-                  );
-                })}
+                {results?.map((row: DirectoryRow) => (
+                  <DirectoryCard key={row.profile_id} {...row} />
+                ))}
               </div>
 
               <Pagination page={page} totalPages={totalPages} />
@@ -342,29 +270,29 @@ function FilterOption({
   );
 }
 
-// قسم مستقل يبرز آخر من انضم إلى الدليل (30 يومًا كحد أقصى، و6 أسماء
-// كحد أعلى) بدل شارة "انضم حديثًا" داخل كل بطاقة — كانت الشارة تتصادم مع
-// الأسماء الطويلة، بينما هذا القسم له مساحته الخاصة تمامًا فلا تصادم ممكن،
-// وبطاقات الشبكة الرئيسية أسفله تبقى نظيفة بلا أي شارات إطلاقًا. حدّ جانبي
-// بلون accent مميّز (بدل لون التخصص) يُبقي معنى "جديد" واضحًا ومستقلاً عن
-// نظام تلوين التخصصات.
-function RecentlyJoinedSection({ people }: { people: RecentPerson[] }) {
+// صندوق مستقل يبرز آخر من انضم إلى الدليل، بدل شارة "انضم حديثًا" داخل كل
+// بطاقة (كانت تتصادم مع الأسماء الطويلة). شبكة تلتف طبيعيًا بلا أي تمرير
+// أفقي، ورابط "المزيد" أسفل الصندوق يظهر فقط إن كان هناك أكثر ممّا يُعرض
+// هنا، ويقود لصفحة /directory/recent الكاملة. حدّ جانبي بلون accent مميّز
+// (بدل لون التخصص) يُبقي معنى "جديد" واضحًا ومستقلاً عن نظام تلوين
+// التخصصات، وبطاقات الشبكة الرئيسية أسفله تبقى نظيفة بلا أي شارات إطلاقًا.
+function RecentlyJoinedSection({ people, hasMore }: { people: RecentPerson[]; hasMore: boolean }) {
   if (people.length === 0) return null;
 
   return (
-    <div className="mb-8">
+    <div className="mb-8 rounded-xl border border-slate-200 bg-white p-4">
       <div className="mb-3 flex items-center gap-2">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs text-white">
           ✨
         </span>
         <h2 className="font-display text-base font-bold text-slate-900">انضموا حديثًا</h2>
       </div>
-      <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {people.map((p) => (
           <Link
             key={p.profile_id}
             href={`/directory/${p.profile_id}`}
-            className="flex w-56 shrink-0 items-center gap-3 rounded-xl border-r-4 border-accent bg-white p-3 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
+            className="flex min-w-0 items-center gap-3 rounded-lg border-r-4 border-accent bg-slate-50 p-3 hover:bg-primary-soft/40"
           >
             <DirectoryAvatar
               photoUrl={p.photo_url}
@@ -379,6 +307,14 @@ function RecentlyJoinedSection({ people }: { people: RecentPerson[] }) {
           </Link>
         ))}
       </div>
+      {hasMore && (
+        <Link
+          href="/directory/recent"
+          className="mt-4 block text-center text-xs font-semibold text-primary hover:underline"
+        >
+          عرض كل من انضم حديثًا ›
+        </Link>
+      )}
     </div>
   );
 }
@@ -467,18 +403,5 @@ function NoSearchResults({ query }: { query?: string }) {
         عرض كل الكفاءات ›
       </Link>
     </div>
-  );
-}
-
-function PinIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 21s7-6.3 7-11.5A7 7 0 0 0 5 9.5C5 14.7 12 21 12 21Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-      />
-      <circle cx="12" cy="9.5" r="2.3" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
   );
 }

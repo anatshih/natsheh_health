@@ -1,5 +1,31 @@
 import { createClient } from '@/lib/supabase/server';
 
+export const NEW_WINDOW_DAYS = 30;
+
+const RECENT_COLUMNS =
+  'profile_id, display_name, photo_url, residence_country, residence_city, specialty_category, specialty, years_experience, last_updated_at';
+
+// من انضم/تحدّث خلال آخر NEW_WINDOW_DAYS يومًا — يُستخدم في صندوق "انضموا
+// حديثًا" (بحد أقصى limit) وفي صفحة "/directory/recent" (بلا حد، limit
+// غير مُمرَّر). totalCount يحدّد إظهار رابط "المزيد" في الصندوق المصغَّر.
+export async function loadRecentlyJoined(limit?: number) {
+  const supabase = await createClient();
+  const cutoff = new Date(Date.now() - NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+  let query = supabase
+    .from('directory_public')
+    .select(RECENT_COLUMNS, { count: 'exact' })
+    .gte('last_updated_at', cutoff)
+    .order('last_updated_at', { ascending: false });
+
+  if (limit) query = query.limit(limit);
+
+  const { data, count } = await query;
+  return { people: data ?? [], totalCount: count ?? 0 };
+}
+
+export type RecentPerson = Awaited<ReturnType<typeof loadRecentlyJoined>>['people'][number];
+
 // إحصاءات مجمّعة من الدليل العام فقط (directory_public) — لا تكشف أي بيانات
 // شخصية، مناسبة للعرض العام (القسم 31) ولشريط الإحصاءات في صفحة الدليل.
 export async function loadDirectoryStats() {
