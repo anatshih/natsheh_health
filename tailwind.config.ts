@@ -24,6 +24,12 @@ const config: Config = {
           soft: '#EEF0E1',
         },
         verified: '#1F8A5F',
+        // خلفية دافئة للصفحات العامة بدل رمادي Tailwind الافتراضي البارد
+        // (slate) — لا تُستخدم في لوحة الإدارة.
+        cream: {
+          DEFAULT: '#FAF6F0',
+          dark: '#F1E9DC',
+        },
       },
       fontFamily: {
         heading: ['var(--font-cairo)', 'Tahoma', 'sans-serif'],

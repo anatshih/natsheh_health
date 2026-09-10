@@ -76,27 +76,30 @@ function Stat({ value, label }: { value: number; label: string }) {
   );
 }
 
-// نمط زخرفي خفيف مستوحى من التطريز الخليلي (الغرزة الصليبية) — بديل عن خلفية
-// بيضاء مسطحة بالكامل، بشفافية منخفضة جدًا لئلا يزاحم النص.
+// خلفية زخرفية مستوحاة من التطريز الخليلي (الغرزة الصليبية بلونين) فوق توهّج
+// متدرّج يمزج الأزرق الأساسي بلمسة دافئة من الأحمر التطريزي — بدل خلفية بيضاء
+// مسطحة بالكامل أو تدرّج أحادي اللون خافت جدًا.
 function TatreezBackground() {
   return (
     <svg
-      className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[460px] w-full"
+      className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] w-full"
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
     >
       <defs>
-        <pattern id="tatreez-home" width="44" height="44" patternUnits="userSpaceOnUse">
-          <path d="M22 3 L41 22 L22 41 L3 22 Z" fill="none" stroke="#A8324A" strokeWidth="1" />
-          <circle cx="22" cy="22" r="2.5" fill="#005CB6" />
+        <pattern id="tatreez-home" width="46" height="46" patternUnits="userSpaceOnUse">
+          <path d="M23 4 L42 23 L23 42 L4 23Z" fill="none" stroke="#A8324A" strokeWidth="1.1" />
+          <path d="M23 13 L33 23 L23 33 L13 23Z" fill="none" stroke="#6E7B3D" strokeWidth="0.8" />
+          <circle cx="23" cy="23" r="2.2" fill="#005CB6" />
         </pattern>
-        <linearGradient id="hero-fade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#EAF2FC" />
-          <stop offset="100%" stopColor="#EAF2FC" stopOpacity="0" />
-        </linearGradient>
+        <radialGradient id="hero-glow" cx="50%" cy="0%" r="75%">
+          <stop offset="0%" stopColor="#BEDCFA" />
+          <stop offset="50%" stopColor="#EFCFC0" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#FAF6F0" stopOpacity="0" />
+        </radialGradient>
       </defs>
-      <rect width="100%" height="100%" fill="url(#hero-fade)" />
-      <rect width="100%" height="100%" fill="url(#tatreez-home)" opacity="0.09" />
+      <rect width="100%" height="100%" fill="url(#hero-glow)" />
+      <rect width="100%" height="100%" fill="url(#tatreez-home)" opacity="0.28" />
     </svg>
   );
 }

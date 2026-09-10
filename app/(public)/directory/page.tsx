@@ -54,7 +54,9 @@ export default async function DirectoryPage({
     !!dateStr && now - new Date(dateStr).getTime() < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
+    <main className="relative overflow-hidden">
+      <DirectoryHeroBackground />
+      <div className="relative mx-auto max-w-6xl px-6 py-10">
       <h1 className="mb-2 font-display text-2xl font-bold">دليل الكفاءات الصحية</h1>
       <p className="mb-6 text-sm text-slate-600">
         الكفاءات المعتمدة والمنشورة فقط من أبناء وبنات عائلة النتشة.
@@ -181,6 +183,7 @@ export default async function DirectoryPage({
           );
         })}
       </div>
+      </div>
     </main>
   );
 }
@@ -188,11 +191,38 @@ export default async function DirectoryPage({
 function StatTile({ value, label }: { value: number; label: string }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white py-3 text-center">
-      <p className="font-display text-2xl font-bold text-primary">
+      <p className="font-display text-2xl font-bold text-accent">
         <AnimatedNumber value={value} />
       </p>
       <p className="text-[11px] text-slate-500">{label}</p>
     </div>
+  );
+}
+
+// نسخة أقصر من خلفية الصفحة الرئيسية — تمنح رأس صفحة الدليل نفس الطابع
+// البصري (توهّج وتطريز خفيف) بدل لون واحد مسطح، بلا مزاحمة لشبكة البطاقات.
+function DirectoryHeroBackground() {
+  return (
+    <svg
+      className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[360px] w-full"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+    >
+      <defs>
+        <pattern id="tatreez-directory" width="46" height="46" patternUnits="userSpaceOnUse">
+          <path d="M23 4 L42 23 L23 42 L4 23Z" fill="none" stroke="#A8324A" strokeWidth="1.1" />
+          <path d="M23 13 L33 23 L23 33 L13 23Z" fill="none" stroke="#6E7B3D" strokeWidth="0.8" />
+          <circle cx="23" cy="23" r="2.2" fill="#005CB6" />
+        </pattern>
+        <radialGradient id="directory-glow" cx="20%" cy="0%" r="80%">
+          <stop offset="0%" stopColor="#BEDCFA" />
+          <stop offset="50%" stopColor="#EFCFC0" stopOpacity="0.8" />
+          <stop offset="100%" stopColor="#FAF6F0" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#directory-glow)" />
+      <rect width="100%" height="100%" fill="url(#tatreez-directory)" opacity="0.24" />
+    </svg>
   );
 }
 
