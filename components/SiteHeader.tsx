@@ -2,10 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import MobileNav from '@/components/MobileNav';
 
-const SECONDARY_LINKS = [
-  { href: '/stats', label: 'الإحصاءات' },
-  { href: '/about', label: 'عن الدليل' },
-];
+const SECONDARY_LINKS = [{ href: '/about', label: 'عن الدليل' }];
 
 const NAV_LINKS = [
   { href: '/directory', label: 'تصفّح دليل الكفاءات' },

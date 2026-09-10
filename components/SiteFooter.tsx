@@ -42,9 +42,6 @@ export default function SiteFooter() {
             <Link href="/join" className="text-xs font-semibold text-slate-600 hover:text-primary">
               انضمام كفاءة صحية جديدة
             </Link>
-            <Link href="/stats" className="text-xs font-semibold text-slate-600 hover:text-primary">
-              الإحصاءات
-            </Link>
             <Link href="/about" className="text-xs font-semibold text-slate-600 hover:text-primary">
               عن الدليل
             </Link>
