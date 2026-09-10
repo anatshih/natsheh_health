@@ -32,7 +32,7 @@ export async function loadDirectoryStats() {
   const supabase = await createClient();
   const { data: rows } = await supabase
     .from('directory_public')
-    .select('specialty, specialty_category, residence_country, family_branch');
+    .select('specialty, specialty_category, residence_country, residence_city');
 
   const totalCount = rows?.length ?? 0;
   const countryCount = new Set((rows ?? []).map((r) => r.residence_country).filter(Boolean)).size;
@@ -40,7 +40,7 @@ export async function loadDirectoryStats() {
   const specialtyCounts = new Map<string, number>();
   const categoryCounts = new Map<string, number>();
   const countryCounts = new Map<string, number>();
-  const branchCounts = new Map<string, number>();
+  const cityCounts = new Map<string, number>();
   let insideCount = 0;
 
   for (const r of rows ?? []) {
@@ -54,8 +54,8 @@ export async function loadDirectoryStats() {
       countryCounts.set(r.residence_country, (countryCounts.get(r.residence_country) ?? 0) + 1);
       if (r.residence_country === 'فلسطين') insideCount++;
     }
-    if (r.family_branch) {
-      branchCounts.set(r.family_branch, (branchCounts.get(r.family_branch) ?? 0) + 1);
+    if (r.residence_city) {
+      cityCounts.set(r.residence_city, (cityCounts.get(r.residence_city) ?? 0) + 1);
     }
   }
 
@@ -68,7 +68,7 @@ export async function loadDirectoryStats() {
     topSpecialties: [...specialtyCounts.entries()].sort((a, b) => b[1] - a[1]),
     topCategories: [...categoryCounts.entries()].sort((a, b) => b[1] - a[1]),
     topCountries: [...countryCounts.entries()].sort((a, b) => b[1] - a[1]),
-    topBranches: [...branchCounts.entries()].sort((a, b) => b[1] - a[1]),
+    topCities: [...cityCounts.entries()].sort((a, b) => b[1] - a[1]),
   };
 }
 

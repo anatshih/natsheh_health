@@ -24,8 +24,9 @@ type DirectoryRow = {
 type SearchParams = {
   q?: string;
   category?: string | string[];
+  specialty?: string | string[];
   country?: string | string[];
-  branch?: string | string[];
+  city?: string | string[];
   page?: string;
 };
 
@@ -40,8 +41,9 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
 
   const q = sp.q?.trim();
   const selectedCategories = asArray(sp.category);
+  const selectedSpecialties = asArray(sp.specialty);
   const selectedCountries = asArray(sp.country);
-  const selectedBranches = asArray(sp.branch);
+  const selectedCities = asArray(sp.city);
 
   let query = supabase
     .from('directory_public')
@@ -54,8 +56,9 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
   // بحث نصي جزئي على الاسم أو التخصص (متطلب معالجة النص العربي، القسم 25)
   if (q) query = query.or(`display_name.ilike.%${q}%,specialty.ilike.%${q}%`);
   if (selectedCategories.length) query = query.in('specialty_category', selectedCategories);
+  if (selectedSpecialties.length) query = query.in('specialty', selectedSpecialties);
   if (selectedCountries.length) query = query.in('residence_country', selectedCountries);
-  if (selectedBranches.length) query = query.in('family_branch', selectedBranches);
+  if (selectedCities.length) query = query.in('residence_city', selectedCities);
 
   const rawPage = Math.max(1, parseInt(sp.page ?? '1', 10) || 1);
 
@@ -69,15 +72,19 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
       loadRecentlyJoined(RECENT_LIMIT),
     ]);
 
-  const { totalCount, countryCount, specialtyCount, topCategories, topCountries, topBranches } = stats;
+  const { totalCount, countryCount, specialtyCount, topCategories, topSpecialties, topCountries, topCities } = stats;
   const isDirectoryEmpty = totalCount === 0;
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
   const page = Math.min(rawPage, totalPages);
 
+  // الترتيب هنا مقصود: أول مجموعتين (المجال الصحي، التخصص) تُفتحان افتراضيًا
+  // في DirectoryFilters (تعتمد على أول عنصرين في هذه المصفوفة)، بينما
+  // الدولة والمدينة تبقيان مطويتين.
   const facets = [
     { paramKey: 'category' as const, title: 'المجال الصحي', options: topCategories },
+    { paramKey: 'specialty' as const, title: 'التخصص', options: topSpecialties },
     { paramKey: 'country' as const, title: 'الدولة', options: topCountries },
-    { paramKey: 'branch' as const, title: 'الفرع العائلي', options: topBranches },
+    { paramKey: 'city' as const, title: 'المدينة', options: topCities },
   ].filter((f) => f.options.length > 0);
 
   return (

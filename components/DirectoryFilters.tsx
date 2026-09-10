@@ -5,15 +5,16 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 type Facet = {
-  paramKey: 'category' | 'country' | 'branch';
+  paramKey: 'category' | 'specialty' | 'country' | 'city';
   title: string;
   options: [string, number][];
 };
 
-// شريط تصفية تفاعلي: أول مجموعتين مفتوحتان افتراضيًا والباقي مطوي بعنوان
-// مختصر يعرض عدد الخيارات المحددة، مع إمكانية الطي/الفرد لكل مجموعة محليًا
-// (حالة العميل فقط) — التصفية نفسها تبقى عبر روابط عادية تُحدِّث الرابط
-// فورًا بلا زر إضافي، مطابقةً لنمط بقية الموقع.
+// شريط تصفية تفاعلي: أول مجموعتين في مصفوفة facets (المُمرَّرة بالترتيب
+// المطلوب من الصفحة) مفتوحتان افتراضيًا، والباقي مطوي بعنوان مختصر يعرض
+// عدد الخيارات المحددة، مع إمكانية الطي/الفرد لكل مجموعة محليًا (حالة
+// العميل فقط) — التصفية نفسها تبقى عبر روابط عادية تُحدِّث الرابط فورًا
+// بلا زر إضافي، مطابقةً لنمط بقية الموقع.
 export default function DirectoryFilters({ facets }: { facets: Facet[] }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
