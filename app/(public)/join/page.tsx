@@ -131,8 +131,8 @@ export default function JoinPage() {
     async function loadReferenceData() {
       const [fb, co, ci, sc, sp] = await Promise.all([
         supabase.from('family_branches').select('id, name').eq('is_active', true),
-        supabase.from('countries').select('id, name_ar').eq('is_active', true),
-        supabase.from('cities').select('id, country_id, name_ar').eq('is_active', true),
+        supabase.from('countries').select('id, name_ar').eq('is_active', true).order('sort_order'),
+        supabase.from('cities').select('id, country_id, name_ar').eq('is_active', true).order('sort_order'),
         supabase.from('specialty_categories').select('id, name').eq('is_active', true).order('sort_order'),
         supabase.from('specialties').select('id, category_id, parent_id, name').eq('is_active', true).order('sort_order'),
       ]);
