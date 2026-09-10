@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 export const NEW_WINDOW_DAYS = 30;
 
 const RECENT_COLUMNS =
-  'profile_id, display_name, photo_url, residence_country, residence_city, specialty_category, specialty, years_experience, last_updated_at';
+  'profile_id, display_name, photo_url, residence_country, residence_city, specialty_category, specialty, last_updated_at';
 
 // من انضم/تحدّث خلال آخر NEW_WINDOW_DAYS يومًا — يُستخدم في صندوق "انضموا
 // حديثًا" (بحد أقصى limit) وفي صفحة "/directory/recent" (بلا حد، limit
@@ -32,7 +32,7 @@ export async function loadDirectoryStats() {
   const supabase = await createClient();
   const { data: rows } = await supabase
     .from('directory_public')
-    .select('specialty, specialty_category, residence_country, years_experience');
+    .select('specialty, specialty_category, residence_country, family_branch');
 
   const totalCount = rows?.length ?? 0;
   const countryCount = new Set((rows ?? []).map((r) => r.residence_country).filter(Boolean)).size;
@@ -40,7 +40,7 @@ export async function loadDirectoryStats() {
   const specialtyCounts = new Map<string, number>();
   const categoryCounts = new Map<string, number>();
   const countryCounts = new Map<string, number>();
-  const experienceBuckets = { under5: 0, mid5to15: 0, over15: 0 };
+  const branchCounts = new Map<string, number>();
   let insideCount = 0;
 
   for (const r of rows ?? []) {
@@ -54,10 +54,8 @@ export async function loadDirectoryStats() {
       countryCounts.set(r.residence_country, (countryCounts.get(r.residence_country) ?? 0) + 1);
       if (r.residence_country === 'فلسطين') insideCount++;
     }
-    if (r.years_experience != null) {
-      if (r.years_experience < 5) experienceBuckets.under5++;
-      else if (r.years_experience <= 15) experienceBuckets.mid5to15++;
-      else experienceBuckets.over15++;
+    if (r.family_branch) {
+      branchCounts.set(r.family_branch, (branchCounts.get(r.family_branch) ?? 0) + 1);
     }
   }
 
@@ -70,7 +68,7 @@ export async function loadDirectoryStats() {
     topSpecialties: [...specialtyCounts.entries()].sort((a, b) => b[1] - a[1]),
     topCategories: [...categoryCounts.entries()].sort((a, b) => b[1] - a[1]),
     topCountries: [...countryCounts.entries()].sort((a, b) => b[1] - a[1]),
-    experienceBuckets,
+    topBranches: [...branchCounts.entries()].sort((a, b) => b[1] - a[1]),
   };
 }
 

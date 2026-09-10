@@ -10,7 +10,6 @@ type Props = {
   residence_city: string | null;
   specialty_category: string | null;
   specialty: string | null;
-  years_experience: number | null;
 };
 
 // بطاقة عضو الدليل العام — مكوّن مشترك بين شبكة /directory الرئيسية
@@ -49,10 +48,6 @@ export default function DirectoryCard(row: Props) {
         >
           {row.specialty}
         </span>
-      )}
-
-      {row.years_experience != null && (
-        <p className="text-xs text-slate-500">خبرة {row.years_experience} سنة</p>
       )}
 
       <Link

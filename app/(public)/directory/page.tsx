@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import DirectoryCard from '@/components/DirectoryCard';
+import DirectoryFilters from '@/components/DirectoryFilters';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import Pagination from '@/components/Pagination';
 import DirectoryAvatar from '@/components/DirectoryAvatar';
@@ -17,7 +18,6 @@ type DirectoryRow = {
   sub_specialty: string | null;
   job_title: string | null;
   employer: string | null;
-  years_experience: number | null;
   last_updated_at: string | null;
 };
 
@@ -25,18 +25,12 @@ type SearchParams = {
   q?: string;
   category?: string | string[];
   country?: string | string[];
-  exp?: string | string[];
+  branch?: string | string[];
   page?: string;
 };
 
 const RECENT_LIMIT = 6;
 const PAGE_SIZE = 12;
-
-const EXP_BUCKETS: { key: 'under5' | 'mid5to15' | 'over15'; label: string }[] = [
-  { key: 'under5', label: 'أقل من 5 سنوات' },
-  { key: 'mid5to15', label: '5 – 15 سنة' },
-  { key: 'over15', label: 'أكثر من 15 سنة' },
-];
 
 const asArray = (v: string | string[] | undefined): string[] => (v == null ? [] : Array.isArray(v) ? v : [v]);
 
@@ -47,12 +41,12 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
   const q = sp.q?.trim();
   const selectedCategories = asArray(sp.category);
   const selectedCountries = asArray(sp.country);
-  const selectedExp = asArray(sp.exp);
+  const selectedBranches = asArray(sp.branch);
 
   let query = supabase
     .from('directory_public')
     .select(
-      'profile_id, display_name, photo_url, residence_country, residence_city, specialty_category, specialty, sub_specialty, job_title, employer, years_experience, last_updated_at',
+      'profile_id, display_name, photo_url, residence_country, residence_city, specialty_category, specialty, sub_specialty, job_title, employer, last_updated_at',
       { count: 'exact' }
     )
     .order('last_updated_at', { ascending: false });
@@ -61,17 +55,7 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
   if (q) query = query.or(`display_name.ilike.%${q}%,specialty.ilike.%${q}%`);
   if (selectedCategories.length) query = query.in('specialty_category', selectedCategories);
   if (selectedCountries.length) query = query.in('residence_country', selectedCountries);
-  if (selectedExp.length) {
-    const clauses = selectedExp
-      .map((bucket) => {
-        if (bucket === 'under5') return 'years_experience.lt.5';
-        if (bucket === 'mid5to15') return 'and(years_experience.gte.5,years_experience.lte.15)';
-        if (bucket === 'over15') return 'years_experience.gt.15';
-        return null;
-      })
-      .filter(Boolean);
-    if (clauses.length) query = query.or(clauses.join(','));
-  }
+  if (selectedBranches.length) query = query.in('family_branch', selectedBranches);
 
   const rawPage = Math.max(1, parseInt(sp.page ?? '1', 10) || 1);
 
@@ -85,27 +69,16 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
       loadRecentlyJoined(RECENT_LIMIT),
     ]);
 
-  const { totalCount, countryCount, specialtyCount, topCategories, topCountries, experienceBuckets } = stats;
+  const { totalCount, countryCount, specialtyCount, topCategories, topCountries, topBranches } = stats;
   const isDirectoryEmpty = totalCount === 0;
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
   const page = Math.min(rawPage, totalPages);
-  const hasActiveFilters = Boolean(q || selectedCategories.length || selectedCountries.length || selectedExp.length);
 
-  // يبني رابط /directory مع تبديل قيمة واحدة ضمن فئة تصفية معيّنة (إضافة إن
-  // كانت غائبة، إزالة إن كانت حاضرة)، مع الإبقاء على بقية الفلاتر كما هي
-  // وإسقاط رقم الصفحة (يعود للصفحة الأولى تلقائيًا عند تغيير أي فلتر).
-  function toggleHref(kind: 'category' | 'country' | 'exp', value: string): string {
-    const current = { category: selectedCategories, country: selectedCountries, exp: selectedExp };
-    const list = current[kind];
-    const next = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
-    const params = new URLSearchParams();
-    if (q) params.set('q', q);
-    (kind === 'category' ? next : selectedCategories).forEach((v) => params.append('category', v));
-    (kind === 'country' ? next : selectedCountries).forEach((v) => params.append('country', v));
-    (kind === 'exp' ? next : selectedExp).forEach((v) => params.append('exp', v));
-    const qs = params.toString();
-    return qs ? `/directory?${qs}` : '/directory';
-  }
+  const facets = [
+    { paramKey: 'category' as const, title: 'المجال الصحي', options: topCategories },
+    { paramKey: 'country' as const, title: 'الدولة', options: topCountries },
+    { paramKey: 'branch' as const, title: 'الفرع العائلي', options: topBranches },
+  ].filter((f) => f.options.length > 0);
 
   return (
     <main className="relative overflow-hidden">
@@ -116,14 +89,7 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
           الكفاءات المعتمدة والمنشورة فقط من أبناء وبنات عائلة النتشة.
         </p>
 
-        <div className="mb-2 grid grid-cols-3 gap-3 sm:max-w-md">
-          <StatTile value={totalCount} label="كفاءة موثّقة" />
-          <StatTile value={specialtyCount} label="تخصصًا" />
-          <StatTile value={countryCount} label="دولة" />
-        </div>
-        <Link href="/stats" className="mb-6 inline-block text-xs font-semibold text-primary hover:underline">
-          عرض كل الإحصاءات ›
-        </Link>
+        <DirectoryStatsBanner totalCount={totalCount} specialtyCount={specialtyCount} countryCount={countryCount} />
 
         <form className="mb-6 flex max-w-md gap-2">
           <input
@@ -154,56 +120,7 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
         {!error && !isDirectoryEmpty && (
           <div className="flex flex-col gap-6 md:flex-row">
             <aside className="w-full shrink-0 md:w-56">
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-700">تصفية النتائج</h3>
-                  {hasActiveFilters && (
-                    <Link href="/directory" className="text-xs font-semibold text-slate-400 hover:text-primary">
-                      مسح الكل
-                    </Link>
-                  )}
-                </div>
-
-                {topCategories.length > 0 && (
-                  <FilterGroup title="المجال الصحي">
-                    {topCategories.map(([name, count]) => (
-                      <FilterOption
-                        key={name}
-                        href={toggleHref('category', name)}
-                        checked={selectedCategories.includes(name)}
-                        label={name}
-                        count={count}
-                      />
-                    ))}
-                  </FilterGroup>
-                )}
-
-                {topCountries.length > 0 && (
-                  <FilterGroup title="الدولة">
-                    {topCountries.map(([name, count]) => (
-                      <FilterOption
-                        key={name}
-                        href={toggleHref('country', name)}
-                        checked={selectedCountries.includes(name)}
-                        label={name}
-                        count={count}
-                      />
-                    ))}
-                  </FilterGroup>
-                )}
-
-                <FilterGroup title="سنوات الخبرة" last>
-                  {EXP_BUCKETS.map((b) => (
-                    <FilterOption
-                      key={b.key}
-                      href={toggleHref('exp', b.key)}
-                      checked={selectedExp.includes(b.key)}
-                      label={b.label}
-                      count={experienceBuckets[b.key]}
-                    />
-                  ))}
-                </FilterGroup>
-              </div>
+              <DirectoryFilters facets={facets} />
             </aside>
 
             <div className="min-w-0 flex-1">
@@ -230,43 +147,47 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
   );
 }
 
-function FilterGroup({ title, last, children }: { title: string; last?: boolean; children: React.ReactNode }) {
+// شريط إحصاءات مختصر بأسلوب أكثر جاذبية — بديل مباشر عن ثلاث بطاقات بيضاء
+// محايدة + رابط لصفحة إحصاءات منفصلة (حُذف الرابط والقسم التفصيلي بالكامل).
+// يجمع الأرقام البارزة مع دعوة صريحة للانضمام في نفس المساحة بدل الاكتفاء
+// بعرض بيانات جامدة.
+function DirectoryStatsBanner({
+  totalCount,
+  specialtyCount,
+  countryCount,
+}: {
+  totalCount: number;
+  specialtyCount: number;
+  countryCount: number;
+}) {
   return (
-    <div className={last ? '' : 'mb-5 border-b border-slate-100 pb-5'}>
-      <h4 className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-400">{title}</h4>
-      <div className="space-y-1.5">{children}</div>
+    <div className="mb-6 flex flex-col items-center justify-between gap-5 rounded-2xl border border-primary-soft bg-gradient-to-l from-primary-soft via-white to-accent-soft px-6 py-5 sm:flex-row">
+      <div className="flex gap-6 sm:gap-8">
+        <BannerStat value={totalCount} label="كفاءة موثّقة" />
+        <BannerStat value={specialtyCount} label="تخصصًا" />
+        <BannerStat value={countryCount} label="دولة" />
+      </div>
+      <div className="flex flex-col items-center gap-2 text-center sm:items-end sm:text-right">
+        <p className="text-xs font-semibold text-slate-700">هل أنت كفاءة صحية من عائلة النتشة؟</p>
+        <Link
+          href="/join"
+          className="rounded-lg bg-primary px-5 py-2 text-xs font-semibold text-white hover:bg-primary-dark"
+        >
+          انضم إلى هذه الشبكة المتنامية
+        </Link>
+      </div>
     </div>
   );
 }
 
-function FilterOption({
-  href,
-  checked,
-  label,
-  count,
-}: {
-  href: string;
-  checked: boolean;
-  label: string;
-  count: number;
-}) {
+function BannerStat({ value, label }: { value: number; label: string }) {
   return (
-    <Link href={href} className="flex items-center gap-2 text-xs text-slate-600 hover:text-primary">
-      <span
-        className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border ${
-          checked ? 'border-primary bg-primary' : 'border-slate-300'
-        }`}
-        aria-hidden="true"
-      >
-        {checked && (
-          <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
-            <path d="M2 6l2.5 2.5L10 3" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )}
-      </span>
-      <span className={checked ? 'font-semibold text-primary' : ''}>{label}</span>
-      <span className="mr-auto text-[11px] text-slate-400">{count}</span>
-    </Link>
+    <div className="text-center">
+      <p className="font-display text-2xl font-bold text-accent sm:text-3xl">
+        <AnimatedNumber value={value} />
+      </p>
+      <p className="text-[11px] text-slate-500">{label}</p>
+    </div>
   );
 }
 
@@ -315,17 +236,6 @@ function RecentlyJoinedSection({ people, hasMore }: { people: RecentPerson[]; ha
           عرض كل من انضم حديثًا ›
         </Link>
       )}
-    </div>
-  );
-}
-
-function StatTile({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white py-3 text-center">
-      <p className="font-display text-2xl font-bold text-accent">
-        <AnimatedNumber value={value} />
-      </p>
-      <p className="text-[11px] text-slate-500">{label}</p>
     </div>
   );
 }
