@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { resolvePasswordReset, rejectPasswordReset } from './actions';
+import Toast, { type ToastState } from '@/components/Toast';
 
 type Request = {
   id: string;
@@ -19,6 +20,8 @@ export default function PasswordResetsPage() {
   const [details, setDetails] = useState<Record<string, { name: string; phone: string; whatsapp: string }>>({});
   const [revealedPasswords, setRevealedPasswords] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<ToastState>(null);
 
   async function load() {
     const {
@@ -52,6 +55,7 @@ export default function PasswordResetsPage() {
       };
     }
     setDetails(detailMap);
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -75,7 +79,21 @@ export default function PasswordResetsPage() {
       setRevealedPasswords((p) => ({ ...p, [req.id]: newPassword }));
       load();
     } else {
-      alert(result.error ?? 'حدث خطأ غير متوقع.');
+      setToast({ message: result.error ?? 'حدث خطأ غير متوقع.', type: 'error' });
+    }
+  }
+
+  async function handleReject(req: Request) {
+    setBusyId(req.id);
+    const fd = new FormData();
+    fd.set('requestId', req.id);
+    const result = await rejectPasswordReset(fd);
+    setBusyId(null);
+    if (result.error) {
+      setToast({ message: result.error, type: 'error' });
+    } else {
+      setToast({ message: 'تم رفض الطلب.', type: 'success' });
+      load();
     }
   }
 
@@ -95,7 +113,8 @@ export default function PasswordResetsPage() {
         الطلب) وتحققت من هويته بمعلومة إضافية (القسم 36).
       </p>
 
-      {requests.length === 0 && <p className="text-sm text-slate-500">لا توجد طلبات معلّقة.</p>}
+      {loading && <p className="text-sm text-slate-500">جارٍ التحميل…</p>}
+      {!loading && requests.length === 0 && <p className="text-sm text-slate-500">لا توجد طلبات معلّقة.</p>}
 
       <div className="space-y-3">
         {requests.map((r) => {
@@ -139,20 +158,13 @@ export default function PasswordResetsPage() {
                     >
                       {busyId === r.id ? 'جارٍ التفعيل…' : 'تفعيل كلمة مرور جديدة'}
                     </button>
-                    <form
-                      action={async (fd) => {
-                        await rejectPasswordReset(fd);
-                        load();
-                      }}
+                    <button
+                      onClick={() => handleReject(r)}
+                      disabled={busyId === r.id}
+                      className="rounded-lg border border-red-300 px-4 py-2 text-xs font-semibold text-red-700 disabled:opacity-60"
                     >
-                      <input type="hidden" name="requestId" value={r.id} />
-                      <button
-                        type="submit"
-                        className="rounded-lg border border-red-300 px-4 py-2 text-xs font-semibold text-red-700"
-                      >
-                        رفض الطلب
-                      </button>
-                    </form>
+                      رفض الطلب
+                    </button>
                   </div>
                 )
               )}
@@ -160,6 +172,8 @@ export default function PasswordResetsPage() {
           );
         })}
       </div>
+
+      <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }

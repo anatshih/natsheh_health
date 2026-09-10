@@ -68,16 +68,16 @@ export async function createStaffAccount(formData: FormData): Promise<CreateResu
 
 // تغيير صلاحية حساب فريق قائم، أو إلغاؤها (role: 'applicant' يزيل وصوله
 // للوحة الإدارة تمامًا دون حذف الحساب). مقصور على admin عبر نفس سياسة RLS.
-export async function updateStaffRole(formData: FormData) {
+export async function updateStaffRole(formData: FormData): Promise<CreateResult> {
   const userId = formData.get('userId') as string;
   const role = formData.get('role') as string;
-  if (!['admin', 'reviewer', 'applicant'].includes(role)) return;
+  if (!['admin', 'reviewer', 'applicant'].includes(role)) return { error: 'صلاحية غير صالحة.' };
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return { error: 'يجب تسجيل الدخول.' };
 
   const { data: me } = await supabase
     .from('app_users')
@@ -85,9 +85,12 @@ export async function updateStaffRole(formData: FormData) {
     .eq('auth_user_id', user.id)
     .single();
 
-  if (!me || me.role !== 'admin') return;
-  if (me.id === userId) return; // لا يمكن للمدير إلغاء صلاحيته عن نفسه (تفاديًا لقفل الوصول)
+  if (!me || me.role !== 'admin') return { error: 'هذا الإجراء مقصور على المدير.' };
+  if (me.id === userId) return { error: 'لا يمكنك إلغاء صلاحيتك عن نفسك.' }; // تفاديًا لقفل الوصول عن غير قصد
 
-  await supabase.from('app_users').update({ role }).eq('id', userId);
+  const { error } = await supabase.from('app_users').update({ role }).eq('id', userId);
+  if (error) return { error: 'تعذّر تحديث الصلاحية. حاول مرة أخرى.' };
+
   revalidatePath('/admin/users');
+  return { ok: true };
 }

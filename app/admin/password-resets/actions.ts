@@ -47,23 +47,32 @@ export async function resolvePasswordReset(
     return { error: 'تعذّر إعادة تعيين كلمة المرور' };
   }
 
-  await supabase
+  // .eq('status','pending') يمنع معالجة نفس الطلب مرتين (نقر مزدوج، أو
+  // مديران في تبويبين مختلفين) — كان غائبًا سابقًا.
+  const { error: statusError } = await supabase
     .from('password_reset_requests')
     .update({ status: 'completed', verified_by: me.id, resolved_at: new Date().toISOString() })
-    .eq('id', requestId);
+    .eq('id', requestId)
+    .eq('status', 'pending');
+
+  if (statusError) {
+    return { error: 'أُعيدت كلمة المرور لكن تعذّر تحديث حالة الطلب.' };
+  }
 
   revalidatePath('/admin/password-resets');
   return { password: newPassword };
 }
 
-export async function rejectPasswordReset(formData: FormData) {
+type RejectResult = { ok: true; error?: undefined } | { error: string; ok?: undefined };
+
+export async function rejectPasswordReset(formData: FormData): Promise<RejectResult> {
   const requestId = formData.get('requestId') as string;
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return { error: 'يجب تسجيل الدخول.' };
 
   const { data: me } = await supabase
     .from('app_users')
@@ -71,11 +80,15 @@ export async function rejectPasswordReset(formData: FormData) {
     .eq('auth_user_id', user.id)
     .single();
 
-  if (!me || me.role !== 'admin') return; // نفس قيد resolvePasswordReset أعلاه — كان مفقودًا هنا فقط
+  if (!me || me.role !== 'admin') return { error: 'هذا الإجراء مقصور على المدير.' }; // نفس قيد resolvePasswordReset أعلاه — كان مفقودًا هنا فقط
 
-  await supabase
+  const { error } = await supabase
     .from('password_reset_requests')
     .update({ status: 'rejected', resolved_at: new Date().toISOString() })
     .eq('id', requestId);
+
+  if (error) return { error: 'تعذّر رفض الطلب.' };
+
   revalidatePath('/admin/password-resets');
+  return { ok: true };
 }

@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 
+type ActionResult = { ok: true; error?: undefined } | { error: string; ok?: undefined };
+
 function randomLockPassword() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
   let out = '';
@@ -27,13 +29,13 @@ async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) 
 // الهوية/الاتصال/الملف/البيانات المهنية، ويقفل تسجيل الدخول نهائيًا عبر كلمة
 // مرور عشوائية غير معروفة لأحد (بدل حذف حساب Supabase Auth، لعدم توفر
 // service role key)، ويُبقي فقط صفًا مجهول الهوية بحالة "مؤرشف" للإحصاءات.
-export async function confirmAccountDeletion(formData: FormData) {
+export async function confirmAccountDeletion(formData: FormData): Promise<ActionResult> {
   const requestId = formData.get('requestId') as string;
   const userId = formData.get('userId') as string;
 
   const supabase = await createClient();
   const me = await requireAdmin(supabase);
-  if (!me) return;
+  if (!me) return { error: 'هذا الإجراء مقصور على المدير.' };
 
   await Promise.all([
     supabase.from('identities').delete().eq('user_id', userId),
@@ -43,17 +45,23 @@ export async function confirmAccountDeletion(formData: FormData) {
     supabase.from('publication_preferences').delete().eq('user_id', userId),
   ]);
 
-  await supabase.from('app_users').update({ status: 'archived' }).eq('id', userId);
+  const { error: statusError } = await supabase
+    .from('app_users')
+    .update({ status: 'archived' })
+    .eq('id', userId);
+  if (statusError) return { error: 'حُذفت البيانات لكن تعذّر أرشفة الحساب.' };
 
-  await supabase.rpc('admin_reset_password', {
+  const { error: rpcError } = await supabase.rpc('admin_reset_password', {
     p_user_id: userId,
     p_new_password: randomLockPassword(),
   });
+  if (rpcError) return { error: 'حُذفت البيانات لكن تعذّر قفل تسجيل الدخول.' };
 
-  await supabase
+  const { error: requestError } = await supabase
     .from('deletion_requests')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
     .eq('id', requestId);
+  if (requestError) return { error: 'اكتمل الحذف لكن تعذّر تحديث حالة الطلب.' };
 
   await supabase.from('audit_logs').insert({
     actor_id: me.id,
@@ -64,25 +72,42 @@ export async function confirmAccountDeletion(formData: FormData) {
   });
 
   revalidatePath('/admin/deletion-requests');
+  return { ok: true };
 }
 
 // رفض طلب حذف — يعيد الحساب إلى حالته السابقة (مثلاً عند الاشتباه بأن الطلب
 // جاء من حساب مخترق وليس من صاحبه الفعلي).
-export async function rejectAccountDeletion(formData: FormData) {
+export async function rejectAccountDeletion(formData: FormData): Promise<ActionResult> {
   const requestId = formData.get('requestId') as string;
   const userId = formData.get('userId') as string;
   const previousStatus = (formData.get('previousStatus') as string) || 'approved';
 
   const supabase = await createClient();
   const me = await requireAdmin(supabase);
-  if (!me) return;
+  if (!me) return { error: 'هذا الإجراء مقصور على المدير.' };
 
-  await supabase.from('app_users').update({ status: previousStatus }).eq('id', userId);
+  const { error: statusError } = await supabase
+    .from('app_users')
+    .update({ status: previousStatus })
+    .eq('id', userId);
+  if (statusError) return { error: 'تعذّر استعادة الحساب.' };
 
-  await supabase
+  const { error: requestError } = await supabase
     .from('deletion_requests')
     .update({ status: 'rejected', completed_at: new Date().toISOString() })
     .eq('id', requestId);
+  if (requestError) return { error: 'استُعيد الحساب لكن تعذّر تحديث حالة الطلب.' };
+
+  // لم يكن الرفض يُسجَّل في audit_logs سابقًا بخلاف الحذف — أُضيف للتناسق
+  // ولأنه قرار حسّاس (استعادة حساب كان قيد الحذف).
+  await supabase.from('audit_logs').insert({
+    actor_id: me.id,
+    action: 'reject_account_deletion',
+    target_table: 'app_users',
+    target_id: userId,
+    details: {},
+  });
 
   revalidatePath('/admin/deletion-requests');
+  return { ok: true };
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { createStaffAccount, updateStaffRole } from './actions';
 import { ROLE_LABELS } from '@/lib/admin-labels';
+import Toast, { type ToastState } from '@/components/Toast';
 
 type StaffRow = {
   id: string;
@@ -20,10 +21,13 @@ export default function UsersPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [myId, setMyId] = useState<string | null>(null);
   const [staff, setStaff] = useState<StaffRow[]>([]);
+  const [staffLoading, setStaffLoading] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0);
+  const [toast, setToast] = useState<ToastState>(null);
 
   async function load() {
     const {
@@ -44,6 +48,7 @@ export default function UsersPage() {
       .order('created_at');
 
     setStaff(rows ?? []);
+    setStaffLoading(false);
   }
 
   useEffect(() => {
@@ -67,13 +72,21 @@ export default function UsersPage() {
     load();
   }
 
-  async function handleRevoke(userId: string) {
-    if (!confirm('هل تريد إلغاء صلاحية هذا الحساب؟ سيفقد الوصول إلى لوحة الإدارة فورًا.')) return;
+  async function handleRevoke(userId: string, name: string | null, email: string | null) {
+    const label = name ?? email ?? 'هذا الحساب';
+    if (!confirm(`هل تريد إلغاء صلاحية "${label}"؟ سيفقد الوصول إلى لوحة الإدارة فورًا.`)) return;
+    setRevokingId(userId);
     const fd = new FormData();
     fd.set('userId', userId);
     fd.set('role', 'applicant');
-    await updateStaffRole(fd);
-    load();
+    const result = await updateStaffRole(fd);
+    setRevokingId(null);
+    if (result.error) {
+      setToast({ message: result.error, type: 'error' });
+    } else {
+      setToast({ message: 'تم إلغاء الصلاحية.', type: 'success' });
+      load();
+    }
   }
 
   return (
@@ -89,7 +102,9 @@ export default function UsersPage() {
       <div>
         <h3 className="mb-3 text-sm font-bold text-slate-700">حسابات الفريق الحالية</h3>
         <div className="rounded-xl border border-slate-200 bg-white p-5">
-          {staff.length === 0 ? (
+          {staffLoading ? (
+            <p className="text-xs text-slate-400">جارٍ التحميل…</p>
+          ) : staff.length === 0 ? (
             <p className="text-xs text-slate-400">لا توجد حسابات فريق بعد.</p>
           ) : (
             <div className="space-y-2">
@@ -108,10 +123,11 @@ export default function UsersPage() {
                     </span>
                     {isAdmin && s.id !== myId && (
                       <button
-                        onClick={() => handleRevoke(s.id)}
-                        className="text-xs font-semibold text-red-600 hover:underline"
+                        onClick={() => handleRevoke(s.id, s.staff_name, s.staff_email)}
+                        disabled={revokingId === s.id}
+                        className="text-xs font-semibold text-red-600 hover:underline disabled:opacity-60"
                       >
-                        إلغاء الصلاحية
+                        {revokingId === s.id ? 'جارٍ الإلغاء…' : 'إلغاء الصلاحية'}
                       </button>
                     )}
                   </div>
@@ -174,6 +190,8 @@ export default function UsersPage() {
           </form>
         </div>
       )}
+
+      <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }

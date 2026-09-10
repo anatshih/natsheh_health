@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { addCategory, toggleCategory, addSpecialty, toggleSpecialty } from './actions';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import SettingsTabs from '@/components/SettingsTabs';
+import Toast, { type ToastState } from '@/components/Toast';
 
 type Row = { id: string; name: string; is_active: boolean; category_id?: string; parent_id?: string | null };
 
@@ -16,6 +17,7 @@ export default function SpecialtiesPage() {
   const [specialties, setSpecialties] = useState<Row[]>([]);
   const [newCategoryId, setNewCategoryId] = useState('');
   const [newParentId, setNewParentId] = useState('');
+  const [toast, setToast] = useState<ToastState>(null);
 
   async function load() {
     const {
@@ -66,8 +68,9 @@ export default function SpecialtiesPage() {
                 {isAdmin && (
                   <form
                     action={async (fd) => {
-                      await toggleCategory(fd);
-                      load();
+                      const result = await toggleCategory(fd);
+                      if (result.error) setToast({ message: result.error, type: 'error' });
+                      else load();
                     }}
                   >
                     <input type="hidden" name="id" value={c.id} />
@@ -83,8 +86,12 @@ export default function SpecialtiesPage() {
         {isAdmin && (
           <form
             action={async (fd) => {
-              await addCategory(fd);
-              load();
+              const result = await addCategory(fd);
+              if (result.error) setToast({ message: result.error, type: 'error' });
+              else {
+                setToast({ message: 'تمت إضافة المجال الصحي.', type: 'success' });
+                load();
+              }
             }}
             className="mt-3 flex gap-2 rounded-xl border border-slate-200 bg-white p-5"
           >
@@ -95,7 +102,7 @@ export default function SpecialtiesPage() {
               className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
             <button type="submit" className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">
-              إضافة
+              إضافة مجال صحي
             </button>
           </form>
         )}
@@ -124,8 +131,9 @@ export default function SpecialtiesPage() {
                   {isAdmin && (
                     <form
                       action={async (fd) => {
-                        await toggleSpecialty(fd);
-                        load();
+                        const result = await toggleSpecialty(fd);
+                        if (result.error) setToast({ message: result.error, type: 'error' });
+                        else load();
                       }}
                     >
                       <input type="hidden" name="id" value={s.id} />
@@ -142,9 +150,14 @@ export default function SpecialtiesPage() {
         {isAdmin && (
           <form
             action={async (fd) => {
-              await addSpecialty(fd);
-              setNewParentId('');
-              load();
+              const result = await addSpecialty(fd);
+              if (result.error) {
+                setToast({ message: result.error, type: 'error' });
+              } else {
+                setToast({ message: 'تمت إضافة التخصص.', type: 'success' });
+                setNewParentId('');
+                load();
+              }
             }}
             className="mt-3 flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-5"
           >
@@ -193,6 +206,8 @@ export default function SpecialtiesPage() {
         )}
       </div>
       </div>
+
+      <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }

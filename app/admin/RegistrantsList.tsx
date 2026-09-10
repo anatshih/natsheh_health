@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { suspendAccount, reactivateAccount, adminDeleteAccount, publishAccount } from './actions';
+import Toast, { type ToastState } from '@/components/Toast';
 
 // نسخة محلية من تسميات الحالات (بدل الاستيراد من lib/reports.ts) لأن ذلك
 // الملف يستورد عميل Supabase الخاص بالخادم (next/headers)، وهذا مكوّن عميل.
@@ -53,7 +54,9 @@ export default function RegistrantsList() {
   const statusFilter = searchParams.get('status');
   const [isAdmin, setIsAdmin] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState>(null);
   const visibleRows = statusFilter ? rows.filter((r) => r.status === statusFilter) : rows;
 
   async function load() {
@@ -81,6 +84,7 @@ export default function RegistrantsList() {
     const nameMap = Object.fromEntries((identities ?? []).map((i: any) => [i.user_id, i.full_name_legal]));
 
     setRows((appUsers ?? []).map((u) => ({ ...u, full_name_legal: nameMap[u.id] ?? null })));
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -92,27 +96,42 @@ export default function RegistrantsList() {
     setBusyId(id);
     const fd = new FormData();
     fd.set('userId', id);
-    await suspendAccount(fd);
+    const result = await suspendAccount(fd);
     setBusyId(null);
-    load();
+    if (result.error) {
+      setToast({ message: result.error, type: 'error' });
+    } else {
+      setToast({ message: 'تم تعطيل الحساب.', type: 'success' });
+      load();
+    }
   }
 
   async function handleReactivate(id: string) {
     setBusyId(id);
     const fd = new FormData();
     fd.set('userId', id);
-    await reactivateAccount(fd);
+    const result = await reactivateAccount(fd);
     setBusyId(null);
-    load();
+    if (result.error) {
+      setToast({ message: result.error, type: 'error' });
+    } else {
+      setToast({ message: 'تمت إعادة تفعيل الحساب.', type: 'success' });
+      load();
+    }
   }
 
   async function handlePublish(id: string) {
     setBusyId(id);
     const fd = new FormData();
     fd.set('userId', id);
-    await publishAccount(fd);
+    const result = await publishAccount(fd);
     setBusyId(null);
-    load();
+    if (result.error) {
+      setToast({ message: result.error, type: 'error' });
+    } else {
+      setToast({ message: 'تم نشر الملف في الدليل العام.', type: 'success' });
+      load();
+    }
   }
 
   async function handleDelete(id: string, name: string | null) {
@@ -125,9 +144,14 @@ export default function RegistrantsList() {
     setBusyId(id);
     const fd = new FormData();
     fd.set('userId', id);
-    await adminDeleteAccount(fd);
+    const result = await adminDeleteAccount(fd);
     setBusyId(null);
-    load();
+    if (result.error) {
+      setToast({ message: result.error, type: 'error' });
+    } else {
+      setToast({ message: 'تم حذف بيانات الحساب نهائيًا.', type: 'success' });
+      load();
+    }
   }
 
   return (
@@ -161,7 +185,13 @@ export default function RegistrantsList() {
             </tr>
           </thead>
           <tbody>
-            {visibleRows.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="p-6 text-center text-slate-400">
+                  جارٍ التحميل…
+                </td>
+              </tr>
+            ) : visibleRows.length === 0 ? (
               <tr>
                 <td colSpan={4} className="p-6 text-center text-slate-400">
                   {statusFilter ? 'لا يوجد مسجَّلون بهذه الحالة.' : 'لا يوجد مسجَّلون بعد.'}
@@ -239,6 +269,8 @@ export default function RegistrantsList() {
           </tbody>
         </table>
       </div>
+
+      <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }
