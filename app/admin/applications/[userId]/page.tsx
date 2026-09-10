@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { reviewApplication } from '../actions';
-import ConfirmSubmitButton from '@/components/ConfirmSubmitButton';
+import ReviewForm from './ReviewForm';
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'مسودة',
@@ -211,40 +210,7 @@ export default async function ApplicationDetailPage({
             مقصور على المدير.
           </p>
         )}
-        <form action={reviewApplication} className="space-y-3">
-          <input type="hidden" name="userId" value={userId} />
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-700">ملاحظة (اختياري)</label>
-            <textarea
-              name="note"
-              rows={3}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <ActionButton
-              name="approve"
-              label="اعتماد"
-              disabled={!canDecide}
-              confirmMessage={`هل تريد اعتماد طلب "${identity?.full_name_legal ?? 'هذا الشخص'}"؟`}
-            />
-            <ActionButton
-              name="approve_publish"
-              label="اعتماد ونشر"
-              primary
-              disabled={!canDecide}
-              confirmMessage={`هل تريد اعتماد ونشر طلب "${identity?.full_name_legal ?? 'هذا الشخص'}"؟ سيظهر ملفه فورًا في الدليل العام.`}
-            />
-            <ActionButton name="request_completion" label="طلب استكمال" disabled={!canDecide} />
-            <ActionButton
-              name="reject"
-              label="رفض"
-              danger
-              disabled={!canDecide}
-              confirmMessage={`هل تريد رفض طلب "${identity?.full_name_legal ?? 'هذا الشخص'}"؟`}
-            />
-          </div>
-        </form>
+        <ReviewForm userId={userId} canDecide={canDecide} fullName={identity?.full_name_legal} />
       </Section>
     </div>
   );
@@ -265,43 +231,5 @@ function Row({ label, value, sensitive }: { label: string; value: any; sensitive
       <span className="text-slate-500">{label}</span>
       <span className={sensitive ? 'font-mono' : ''}>{value || '—'}</span>
     </div>
-  );
-}
-
-function ActionButton({
-  name,
-  label,
-  primary,
-  danger,
-  disabled,
-  confirmMessage,
-}: {
-  name: string;
-  label: string;
-  primary?: boolean;
-  danger?: boolean;
-  disabled?: boolean;
-  confirmMessage?: string;
-}) {
-  const className = `rounded-lg px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${
-    primary
-      ? 'bg-primary text-white'
-      : danger
-        ? 'border border-red-300 text-red-700'
-        : 'border border-slate-300 text-slate-700'
-  }`;
-
-  if (confirmMessage) {
-    return (
-      <ConfirmSubmitButton name="action" value={name} disabled={disabled} className={className} confirmMessage={confirmMessage}>
-        {label}
-      </ConfirmSubmitButton>
-    );
-  }
-
-  return (
-    <button type="submit" name="action" value={name} disabled={disabled} className={className}>
-      {label}
-    </button>
   );
 }

@@ -161,6 +161,7 @@ export type ReportFilters = {
   branchIds: string[];
   categoryIds: string[];
   countryIds: string[];
+  q: string;
 };
 
 export type DetailedRecord = {
@@ -269,16 +270,19 @@ export async function loadDetailedRecords(filters: ReportFilters): Promise<Detai
   if (filters.branchIds.length) result = result.filter((r) => filters.branchIds.includes(r.branchId));
   if (filters.countryIds.length) result = result.filter((r) => filters.countryIds.includes(r.countryId));
   if (filters.categoryIds.length) result = result.filter((r) => filters.categoryIds.includes(r.categoryId));
+  if (filters.q) result = result.filter((r) => r.fullName.includes(filters.q) || r.idNumber.includes(filters.q));
 
   return result;
 }
 
 export function parseReportFilters(searchParams: Record<string, string | string[] | undefined>): ReportFilters {
   const asArray = (v: string | string[] | undefined): string[] => (v == null ? [] : Array.isArray(v) ? v : [v]);
+  const asString = (v: string | string[] | undefined): string => (Array.isArray(v) ? v[0] ?? '' : v ?? '');
   return {
     statuses: asArray(searchParams.status),
     branchIds: asArray(searchParams.branch),
     categoryIds: asArray(searchParams.category),
     countryIds: asArray(searchParams.country),
+    q: asString(searchParams.q).trim(),
   };
 }

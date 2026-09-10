@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
     const values = request.nextUrl.searchParams.getAll(key);
     if (values.length) searchParams[key] = values;
   }
+  const q = request.nextUrl.searchParams.get('q');
+  if (q) searchParams.q = [q];
   const filters = parseReportFilters(searchParams);
   const records = await loadDetailedRecords(filters);
 

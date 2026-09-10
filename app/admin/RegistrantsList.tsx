@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { suspendAccount, reactivateAccount, adminDeleteAccount, publishAccount } from './actions';
 import Toast, { type ToastState } from '@/components/Toast';
+import Pagination from '@/components/Pagination';
+
+const PAGE_SIZE = 20;
 
 // نسخة محلية من تسميات الحالات (بدل الاستيراد من lib/reports.ts) لأن ذلك
 // الملف يستورد عميل Supabase الخاص بالخادم (next/headers)، وهذا مكوّن عميل.
@@ -57,7 +60,21 @@ export default function RegistrantsList() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState>(null);
-  const visibleRows = statusFilter ? rows.filter((r) => r.status === statusFilter) : rows;
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+
+  const filteredRows = rows.filter((r) => {
+    if (statusFilter && r.status !== statusFilter) return false;
+    if (search.trim() && !(r.full_name_legal ?? '').includes(search.trim())) return false;
+    return true;
+  });
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const visibleRows = filteredRows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter]);
 
   async function load() {
     const {
@@ -156,7 +173,7 @@ export default function RegistrantsList() {
 
   return (
     <div className="mt-8">
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-bold text-slate-700">جميع المسجَّلين</h2>
         {statusFilter && (
           <p className="text-xs text-slate-500">
@@ -166,6 +183,13 @@ export default function RegistrantsList() {
             </Link>
           </p>
         )}
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="ابحث بالاسم…"
+          className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
       </div>
 
       {!isAdmin && (
@@ -194,7 +218,11 @@ export default function RegistrantsList() {
             ) : visibleRows.length === 0 ? (
               <tr>
                 <td colSpan={4} className="p-6 text-center text-slate-400">
-                  {statusFilter ? 'لا يوجد مسجَّلون بهذه الحالة.' : 'لا يوجد مسجَّلون بعد.'}
+                  {search.trim()
+                    ? 'لا يوجد مسجَّلون مطابقون لبحثك.'
+                    : statusFilter
+                      ? 'لا يوجد مسجَّلون بهذه الحالة.'
+                      : 'لا يوجد مسجَّلون بعد.'}
                 </td>
               </tr>
             ) : (
@@ -269,6 +297,8 @@ export default function RegistrantsList() {
           </tbody>
         </table>
       </div>
+
+      <Pagination page={currentPage} totalPages={totalPages} onPageChange={setPage} />
 
       <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>

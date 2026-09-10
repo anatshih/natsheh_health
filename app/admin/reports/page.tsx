@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { loadDetailedRecords, parseReportFilters, STATUS_LABELS, ALL_STATUSES } from '@/lib/reports';
 import AdminSectionTabs from '@/components/AdminSectionTabs';
+import Pagination from '@/components/Pagination';
+
+const PAGE_SIZE = 30;
 
 // "التقارير" — بيانات تفصيلية كاملة لكل شخص (بخلاف "الإحصائيات" المجمّعة)،
 // قابلة للتصفية بمعايير متعددة الاختيار (الحالة، الفرع، المجال، الدولة)
@@ -22,6 +25,9 @@ export default async function ReportsPage({
   ]);
 
   const exportQuery = buildQueryString(filters);
+  const totalPages = Math.max(1, Math.ceil(records.length / PAGE_SIZE));
+  const page = Math.min(Math.max(1, parseInt(String(sp.page ?? '1'), 10) || 1), totalPages);
+  const pagedRecords = records.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -38,6 +44,13 @@ export default async function ReportsPage({
       </div>
 
       <form method="GET" className="mt-4 rounded-xl border border-slate-200 bg-white p-5">
+        <input
+          type="text"
+          name="q"
+          defaultValue={filters.q}
+          placeholder="ابحث بالاسم أو رقم الهوية…"
+          className="mb-5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
         <div className="grid gap-5 sm:grid-cols-4">
           <FilterGroup
             title="الحالة"
@@ -117,7 +130,7 @@ export default async function ReportsPage({
                 </td>
               </tr>
             ) : (
-              records.map((r) => (
+              pagedRecords.map((r) => (
                 <tr key={r.userId} className="border-t border-slate-100">
                   <Td>{r.fullName}</Td>
                   <Td>{r.idNumber}</Td>
@@ -144,6 +157,8 @@ export default async function ReportsPage({
           </tbody>
         </table>
       </div>
+
+      <Pagination page={page} totalPages={totalPages} />
     </div>
   );
 }
@@ -153,12 +168,14 @@ function buildQueryString(filters: {
   branchIds: string[];
   categoryIds: string[];
   countryIds: string[];
+  q: string;
 }): string {
   const params = new URLSearchParams();
   filters.statuses.forEach((s) => params.append('status', s));
   filters.branchIds.forEach((s) => params.append('branch', s));
   filters.categoryIds.forEach((s) => params.append('category', s));
   filters.countryIds.forEach((s) => params.append('country', s));
+  if (filters.q) params.set('q', filters.q);
   const qs = params.toString();
   return qs ? `?${qs}` : '';
 }
