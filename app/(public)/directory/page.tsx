@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import DirectoryAvatar from '@/components/DirectoryAvatar';
 import AnimatedNumber from '@/components/AnimatedNumber';
+import Pagination from '@/components/Pagination';
 import { loadDirectoryStats } from '@/lib/directoryStats';
 import { specialtyColor } from '@/lib/specialtyColors';
 
@@ -20,171 +21,303 @@ type DirectoryRow = {
   last_updated_at: string | null;
 };
 
-const NEW_WINDOW_DAYS = 30;
+type SearchParams = {
+  q?: string;
+  category?: string | string[];
+  country?: string | string[];
+  exp?: string | string[];
+  page?: string;
+};
 
-export default async function DirectoryPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
+const NEW_WINDOW_DAYS = 30;
+const PAGE_SIZE = 12;
+
+const EXP_BUCKETS: { key: 'under5' | 'mid5to15' | 'over15'; label: string }[] = [
+  { key: 'under5', label: 'أقل من 5 سنوات' },
+  { key: 'mid5to15', label: '5 – 15 سنة' },
+  { key: 'over15', label: 'أكثر من 15 سنة' },
+];
+
+const asArray = (v: string | string[] | undefined): string[] => (v == null ? [] : Array.isArray(v) ? v : [v]);
+
+export default async function DirectoryPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const sp = await searchParams;
   const supabase = await createClient();
-  const q = (await searchParams).q?.trim();
+
+  const q = sp.q?.trim();
+  const selectedCategories = asArray(sp.category);
+  const selectedCountries = asArray(sp.country);
+  const selectedExp = asArray(sp.exp);
 
   let query = supabase
     .from('directory_public')
     .select(
-      'profile_id, display_name, photo_url, residence_country, residence_city, specialty_category, specialty, sub_specialty, job_title, employer, years_experience, last_updated_at'
+      'profile_id, display_name, photo_url, residence_country, residence_city, specialty_category, specialty, sub_specialty, job_title, employer, years_experience, last_updated_at',
+      { count: 'exact' }
     )
-    .order('last_updated_at', { ascending: false })
-    .limit(30);
+    .order('last_updated_at', { ascending: false });
 
   // بحث نصي جزئي على الاسم أو التخصص (متطلب معالجة النص العربي، القسم 25)
-  if (q) {
-    query = query.or(`display_name.ilike.%${q}%,specialty.ilike.%${q}%`);
+  if (q) query = query.or(`display_name.ilike.%${q}%,specialty.ilike.%${q}%`);
+  if (selectedCategories.length) query = query.in('specialty_category', selectedCategories);
+  if (selectedCountries.length) query = query.in('residence_country', selectedCountries);
+  if (selectedExp.length) {
+    const clauses = selectedExp
+      .map((bucket) => {
+        if (bucket === 'under5') return 'years_experience.lt.5';
+        if (bucket === 'mid5to15') return 'and(years_experience.gte.5,years_experience.lte.15)';
+        if (bucket === 'over15') return 'years_experience.gt.15';
+        return null;
+      })
+      .filter(Boolean);
+    if (clauses.length) query = query.or(clauses.join(','));
   }
 
-  const [{ data: results, error }, stats] = await Promise.all([query, loadDirectoryStats()]);
+  const rawPage = Math.max(1, parseInt(sp.page ?? '1', 10) || 1);
 
-  const { totalCount, countryCount, specialtyCount, topSpecialties: allTopSpecialties } = stats;
-  const topSpecialties = allTopSpecialties.slice(0, 6);
+  const [{ data: results, error, count }, stats] = await Promise.all([
+    query.range((rawPage - 1) * PAGE_SIZE, rawPage * PAGE_SIZE - 1),
+    loadDirectoryStats(),
+  ]);
+
+  const { totalCount, countryCount, specialtyCount, topCategories, topCountries, experienceBuckets } = stats;
   const isDirectoryEmpty = totalCount === 0;
+  const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
+  const page = Math.min(rawPage, totalPages);
+  const hasActiveFilters = Boolean(q || selectedCategories.length || selectedCountries.length || selectedExp.length);
 
   const now = Date.now();
   const isNew = (dateStr: string | null) =>
     !!dateStr && now - new Date(dateStr).getTime() < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
+  // يبني رابط /directory مع تبديل قيمة واحدة ضمن فئة تصفية معيّنة (إضافة إن
+  // كانت غائبة، إزالة إن كانت حاضرة)، مع الإبقاء على بقية الفلاتر كما هي
+  // وإسقاط رقم الصفحة (يعود للصفحة الأولى تلقائيًا عند تغيير أي فلتر).
+  function toggleHref(kind: 'category' | 'country' | 'exp', value: string): string {
+    const current = { category: selectedCategories, country: selectedCountries, exp: selectedExp };
+    const list = current[kind];
+    const next = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    (kind === 'category' ? next : selectedCategories).forEach((v) => params.append('category', v));
+    (kind === 'country' ? next : selectedCountries).forEach((v) => params.append('country', v));
+    (kind === 'exp' ? next : selectedExp).forEach((v) => params.append('exp', v));
+    const qs = params.toString();
+    return qs ? `/directory?${qs}` : '/directory';
+  }
+
   return (
     <main className="relative overflow-hidden">
       <DirectoryHeroBackground />
       <div className="relative mx-auto max-w-6xl px-6 py-10">
-      <h1 className="mb-2 font-display text-2xl font-bold">دليل الكفاءات الصحية</h1>
-      <p className="mb-6 text-sm text-slate-600">
-        الكفاءات المعتمدة والمنشورة فقط من أبناء وبنات عائلة النتشة.
-      </p>
-
-      <div className="mb-2 grid grid-cols-3 gap-3 sm:max-w-md">
-        <StatTile value={totalCount} label="كفاءة موثّقة" />
-        <StatTile value={specialtyCount} label="تخصصًا" />
-        <StatTile value={countryCount} label="دولة" />
-      </div>
-      <Link href="/stats" className="mb-6 inline-block text-xs font-semibold text-primary hover:underline">
-        عرض كل الإحصاءات ›
-      </Link>
-
-      <form className="mb-5 flex max-w-md gap-2">
-        <input
-          type="text"
-          name="q"
-          defaultValue={q}
-          placeholder="ابحث بالاسم أو التخصص… مثال: طبيب قلب"
-          aria-label="ابحث بالاسم أو التخصص"
-          className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-sm"
-        />
-        <button
-          type="submit"
-          className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white"
-        >
-          بحث
-        </button>
-      </form>
-
-      {topSpecialties.length > 0 && (
-        <div className="mb-8 flex flex-wrap gap-2">
-          {topSpecialties.map(([name, count]) => (
-            <Link
-              key={name}
-              href={`/directory?q=${encodeURIComponent(name)}`}
-              className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                q === name
-                  ? 'border-primary bg-primary text-white'
-                  : 'border-slate-200 bg-white text-slate-600 hover:border-primary hover:text-primary'
-              }`}
-            >
-              {name} ({count})
-            </Link>
-          ))}
-          {q && (
-            <Link
-              href="/directory"
-              className="rounded-full px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-primary"
-            >
-              مسح التصفية ✕
-            </Link>
-          )}
-        </div>
-      )}
-
-      {error && (
-        <p className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
-          تعذّر تحميل النتائج حاليًا. تأكد من تنفيذ مخطط قاعدة البيانات في database/.
+        <h1 className="mb-2 font-display text-2xl font-bold">دليل الكفاءات الصحية</h1>
+        <p className="mb-6 text-sm text-slate-600">
+          الكفاءات المعتمدة والمنشورة فقط من أبناء وبنات عائلة النتشة.
         </p>
-      )}
 
-      {!error && isDirectoryEmpty && <EmptyDirectoryState />}
+        <div className="mb-2 grid grid-cols-3 gap-3 sm:max-w-md">
+          <StatTile value={totalCount} label="كفاءة موثّقة" />
+          <StatTile value={specialtyCount} label="تخصصًا" />
+          <StatTile value={countryCount} label="دولة" />
+        </div>
+        <Link href="/stats" className="mb-6 inline-block text-xs font-semibold text-primary hover:underline">
+          عرض كل الإحصاءات ›
+        </Link>
 
-      {!error && !isDirectoryEmpty && (!results || results.length === 0) && (
-        <NoSearchResults query={q} />
-      )}
+        <form className="mb-6 flex max-w-md gap-2">
+          <input
+            type="text"
+            name="q"
+            defaultValue={q}
+            placeholder="ابحث بالاسم أو التخصص… مثال: طبيب قلب"
+            aria-label="ابحث بالاسم أو التخصص"
+            className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-sm"
+          />
+          <button type="submit" className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">
+            بحث
+          </button>
+        </form>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {results?.map((row: DirectoryRow) => {
-          const color = specialtyColor(row.specialty_category);
-          return (
-            <article
-              key={row.profile_id}
-              className="relative flex flex-col gap-3 overflow-hidden rounded-xl border border-slate-200 bg-white p-5 pt-6 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-            >
-              <span className="absolute inset-x-0 top-0 h-1" style={{ background: color.solid }} aria-hidden="true" />
+        {error && (
+          <p className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
+            تعذّر تحميل النتائج حاليًا. تأكد من تنفيذ مخطط قاعدة البيانات في database/.
+          </p>
+        )}
 
-              {isNew(row.last_updated_at) && (
-                <span className="absolute left-4 top-4 rounded-full bg-accent-soft px-2.5 py-1 text-[10px] font-bold text-accent">
-                  انضم حديثًا
-                </span>
-              )}
+        {!error && isDirectoryEmpty && <EmptyDirectoryState />}
 
-              <div className="flex items-center gap-3">
-                <DirectoryAvatar
-                  photoUrl={row.photo_url}
-                  name={row.display_name}
-                  category={row.specialty_category}
-                  size={52}
-                />
-                <div>
-                  <h2 className="font-heading text-base font-bold">{row.display_name}</h2>
-                  {(row.residence_city || row.residence_country) && (
-                    <p className="flex items-center gap-1 text-xs text-slate-500">
-                      <PinIcon />
-                      {[row.residence_city, row.residence_country].filter(Boolean).join('، ')}
-                    </p>
+        {!error && !isDirectoryEmpty && (
+          <div className="flex flex-col gap-6 md:flex-row">
+            <aside className="w-full shrink-0 md:w-56">
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-700">تصفية النتائج</h3>
+                  {hasActiveFilters && (
+                    <Link href="/directory" className="text-xs font-semibold text-slate-400 hover:text-primary">
+                      مسح الكل
+                    </Link>
                   )}
                 </div>
+
+                {topCategories.length > 0 && (
+                  <FilterGroup title="المجال الصحي">
+                    {topCategories.map(([name, count]) => (
+                      <FilterOption
+                        key={name}
+                        href={toggleHref('category', name)}
+                        checked={selectedCategories.includes(name)}
+                        label={name}
+                        count={count}
+                      />
+                    ))}
+                  </FilterGroup>
+                )}
+
+                {topCountries.length > 0 && (
+                  <FilterGroup title="الدولة">
+                    {topCountries.map(([name, count]) => (
+                      <FilterOption
+                        key={name}
+                        href={toggleHref('country', name)}
+                        checked={selectedCountries.includes(name)}
+                        label={name}
+                        count={count}
+                      />
+                    ))}
+                  </FilterGroup>
+                )}
+
+                <FilterGroup title="سنوات الخبرة" last>
+                  {EXP_BUCKETS.map((b) => (
+                    <FilterOption
+                      key={b.key}
+                      href={toggleHref('exp', b.key)}
+                      checked={selectedExp.includes(b.key)}
+                      label={b.label}
+                      count={experienceBuckets[b.key]}
+                    />
+                  ))}
+                </FilterGroup>
+              </div>
+            </aside>
+
+            <div className="min-w-0 flex-1">
+              {results && results.length > 0 && (
+                <p className="mb-3 text-xs text-slate-500">
+                  <strong className="text-slate-700">{count}</strong> نتيجة مطابقة
+                </p>
+              )}
+
+              {(!results || results.length === 0) && <NoSearchResults query={q} />}
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {results?.map((row: DirectoryRow) => {
+                  const color = specialtyColor(row.specialty_category);
+                  return (
+                    <article
+                      key={row.profile_id}
+                      className="relative flex flex-col gap-3 overflow-hidden rounded-xl border border-slate-200 bg-white p-5 pt-6 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                    >
+                      <span
+                        className="absolute inset-x-0 top-0 h-1"
+                        style={{ background: color.solid }}
+                        aria-hidden="true"
+                      />
+
+                      {isNew(row.last_updated_at) && (
+                        <span className="absolute left-4 top-4 rounded-full bg-accent-soft px-2.5 py-1 text-[10px] font-bold text-accent">
+                          انضم حديثًا
+                        </span>
+                      )}
+
+                      <div className="flex items-center gap-3">
+                        <DirectoryAvatar
+                          photoUrl={row.photo_url}
+                          name={row.display_name}
+                          category={row.specialty_category}
+                          size={52}
+                        />
+                        <div>
+                          <h2 className="font-heading text-base font-bold">{row.display_name}</h2>
+                          {(row.residence_city || row.residence_country) && (
+                            <p className="flex items-center gap-1 text-xs text-slate-500">
+                              <PinIcon />
+                              {[row.residence_city, row.residence_country].filter(Boolean).join('، ')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {row.specialty && (
+                        <span
+                          className="w-fit rounded-full px-3 py-1 text-xs font-semibold"
+                          style={{ background: color.soft, color: color.text }}
+                        >
+                          {row.specialty}
+                        </span>
+                      )}
+
+                      {row.years_experience != null && (
+                        <p className="text-xs text-slate-500">خبرة {row.years_experience} سنة</p>
+                      )}
+
+                      <Link
+                        href={`/directory/${row.profile_id}`}
+                        className="mt-1 rounded-lg border border-primary py-2 text-center text-xs font-semibold text-primary hover:bg-primary-soft"
+                      >
+                        عرض الملف المهني
+                      </Link>
+                    </article>
+                  );
+                })}
               </div>
 
-              {row.specialty && (
-                <span
-                  className="w-fit rounded-full px-3 py-1 text-xs font-semibold"
-                  style={{ background: color.soft, color: color.text }}
-                >
-                  {row.specialty}
-                </span>
-              )}
-
-              {row.years_experience != null && (
-                <p className="text-xs text-slate-500">خبرة {row.years_experience} سنة</p>
-              )}
-
-              <Link
-                href={`/directory/${row.profile_id}`}
-                className="mt-1 rounded-lg border border-primary py-2 text-center text-xs font-semibold text-primary hover:bg-primary-soft"
-              >
-                عرض الملف المهني
-              </Link>
-            </article>
-          );
-        })}
-      </div>
+              <Pagination page={page} totalPages={totalPages} />
+            </div>
+          </div>
+        )}
       </div>
     </main>
+  );
+}
+
+function FilterGroup({ title, last, children }: { title: string; last?: boolean; children: React.ReactNode }) {
+  return (
+    <div className={last ? '' : 'mb-5 border-b border-slate-100 pb-5'}>
+      <h4 className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-400">{title}</h4>
+      <div className="space-y-1.5">{children}</div>
+    </div>
+  );
+}
+
+function FilterOption({
+  href,
+  checked,
+  label,
+  count,
+}: {
+  href: string;
+  checked: boolean;
+  label: string;
+  count: number;
+}) {
+  return (
+    <Link href={href} className="flex items-center gap-2 text-xs text-slate-600 hover:text-primary">
+      <span
+        className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border ${
+          checked ? 'border-primary bg-primary' : 'border-slate-300'
+        }`}
+        aria-hidden="true"
+      >
+        {checked && (
+          <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6l2.5 2.5L10 3" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </span>
+      <span className={checked ? 'font-semibold text-primary' : ''}>{label}</span>
+      <span className="mr-auto text-[11px] text-slate-400">{count}</span>
+    </Link>
   );
 }
 
@@ -260,12 +393,12 @@ function EmptyDirectoryState() {
 // يوجد أعضاء في الدليل، لكن هذا البحث/التصفية تحديدًا لم يطابق أحدًا.
 function NoSearchResults({ query }: { query?: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-6 py-10 text-center">
+    <div className="mb-4 rounded-xl border border-slate-200 bg-white px-6 py-10 text-center">
       <p className="text-sm text-slate-600">
         {query ? (
           <>لا توجد نتيجة لبحثك عن "{query}". جرّب اسمًا أو تخصصًا آخر.</>
         ) : (
-          'لا توجد نتائج مطابقة لهذا التصفية.'
+          'لا توجد نتائج مطابقة لهذه التصفية.'
         )}
       </p>
       <Link href="/directory" className="mt-2 inline-block text-xs font-semibold text-primary hover:underline">

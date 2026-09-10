@@ -368,20 +368,44 @@ export default function JoinPage() {
       <h1 className="mb-1 font-display text-2xl font-bold">طلب انضمام إلى الدليل</h1>
       <p className="mb-8 text-sm text-slate-600">دليل الكفاءات الصحية — عائلة النتشة</p>
 
-      <ol className="mb-10 flex gap-2 text-xs font-semibold text-slate-400">
-        {STEPS.map((label, i) => (
-          <li key={label} className="flex-1">
-            <button
-              type="button"
-              onClick={() => setStep(i + 1)}
-              className={`w-full border-t-2 pt-2 text-center hover:text-primary ${
-                i + 1 <= step ? 'border-primary text-primary' : 'border-slate-200'
-              }`}
-            >
-              {label}
-            </button>
-          </li>
-        ))}
+      <ol className="mb-10 flex items-start">
+        {STEPS.map((label, i) => {
+          const stepNum = i + 1;
+          const done = stepNum < step;
+          const active = stepNum === step;
+          return (
+            <li key={label} className="relative flex flex-1 flex-col items-center gap-2">
+              {i > 0 && (
+                <span
+                  className={`absolute top-[14px] right-[calc(50%+14px)] left-[calc(-50%+14px)] h-0.5 ${
+                    done || active ? 'bg-primary' : 'bg-slate-200'
+                  }`}
+                  aria-hidden="true"
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => setStep(stepNum)}
+                className={`relative z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors ${
+                  done
+                    ? 'border-primary bg-primary text-white'
+                    : active
+                      ? 'border-primary bg-white text-primary'
+                      : 'border-slate-300 bg-white text-slate-400'
+                }`}
+              >
+                {done ? '✓' : stepNum}
+              </button>
+              <span
+                className={`text-center text-[11px] font-semibold ${
+                  active ? 'text-primary' : done ? 'text-slate-600' : 'text-slate-400'
+                }`}
+              >
+                {label}
+              </span>
+            </li>
+          );
+        })}
       </ol>
 
       {error && (
