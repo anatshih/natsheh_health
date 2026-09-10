@@ -377,20 +377,23 @@ export default function JoinPage() {
             <li key={label} className="relative flex flex-1 flex-col items-center gap-2">
               {i > 0 && (
                 <span
-                  className={`absolute top-[14px] right-[calc(50%+14px)] left-[calc(-50%+14px)] h-0.5 ${
-                    done || active ? 'bg-primary' : 'bg-slate-200'
-                  }`}
+                  className="absolute top-[18px] end-[calc(50%+18px)] start-[calc(-50%+18px)] h-0.5 overflow-hidden rounded-full bg-slate-200"
                   aria-hidden="true"
-                />
+                >
+                  <span
+                    className="block h-full rounded-full bg-accent transition-[width] duration-500 ease-out"
+                    style={{ width: done || active ? '100%' : '0%' }}
+                  />
+                </span>
               )}
               <button
                 type="button"
                 onClick={() => setStep(stepNum)}
-                className={`relative z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors ${
+                className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 ${
                   done
-                    ? 'border-primary bg-primary text-white'
+                    ? 'border-accent bg-accent text-white'
                     : active
-                      ? 'border-primary bg-white text-primary'
+                      ? 'border-primary bg-white text-primary shadow-md shadow-primary/25'
                       : 'border-slate-300 bg-white text-slate-400'
                 }`}
               >
@@ -398,7 +401,7 @@ export default function JoinPage() {
               </button>
               <span
                 className={`text-center text-[11px] font-semibold ${
-                  active ? 'text-primary' : done ? 'text-slate-600' : 'text-slate-400'
+                  active ? 'text-primary' : done ? 'text-accent' : 'text-slate-400'
                 }`}
               >
                 {label}
