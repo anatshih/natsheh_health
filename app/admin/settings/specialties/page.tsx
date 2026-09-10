@@ -6,6 +6,7 @@ import { addCategory, toggleCategory, addSpecialty, toggleSpecialty } from './ac
 import ToggleSwitch from '@/components/ToggleSwitch';
 import SettingsTabs from '@/components/SettingsTabs';
 import Toast, { type ToastState } from '@/components/Toast';
+import Button from '@/components/Button';
 
 type Row = { id: string; name: string; is_active: boolean; category_id?: string; parent_id?: string | null };
 
@@ -17,6 +18,8 @@ export default function SpecialtiesPage() {
   const [specialties, setSpecialties] = useState<Row[]>([]);
   const [newCategoryId, setNewCategoryId] = useState('');
   const [newParentId, setNewParentId] = useState('');
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [addingSpecialty, setAddingSpecialty] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
 
   async function load() {
@@ -86,7 +89,9 @@ export default function SpecialtiesPage() {
         {isAdmin && (
           <form
             action={async (fd) => {
+              setAddingCategory(true);
               const result = await addCategory(fd);
+              setAddingCategory(false);
               if (result.error) setToast({ message: result.error, type: 'error' });
               else {
                 setToast({ message: 'تمت إضافة المجال الصحي.', type: 'success' });
@@ -99,11 +104,12 @@ export default function SpecialtiesPage() {
               name="name"
               required
               placeholder="اسم المجال الصحي الجديد"
+              aria-label="اسم المجال الصحي الجديد"
               className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
-            <button type="submit" className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">
-              إضافة مجال صحي
-            </button>
+            <Button type="submit" variant="primary" disabled={addingCategory}>
+              {addingCategory ? 'جارٍ الإضافة…' : 'إضافة مجال صحي'}
+            </Button>
           </form>
         )}
       </div>
@@ -150,7 +156,9 @@ export default function SpecialtiesPage() {
         {isAdmin && (
           <form
             action={async (fd) => {
+              setAddingSpecialty(true);
               const result = await addSpecialty(fd);
+              setAddingSpecialty(false);
               if (result.error) {
                 setToast({ message: result.error, type: 'error' });
               } else {
@@ -169,6 +177,7 @@ export default function SpecialtiesPage() {
                 setNewCategoryId(e.target.value);
                 setNewParentId('');
               }}
+              aria-label="المجال الصحي"
               className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
             >
               <option value="">المجال الصحي</option>
@@ -183,6 +192,7 @@ export default function SpecialtiesPage() {
               name="parent_id"
               value={newParentId}
               onChange={(e) => setNewParentId(e.target.value)}
+              aria-label="التخصص الأب (اختياري)"
               className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
             >
               <option value="">تخصص رئيسي جديد (بدون تخصص أب)</option>
@@ -197,11 +207,12 @@ export default function SpecialtiesPage() {
               name="name"
               required
               placeholder="اسم التخصص"
+              aria-label="اسم التخصص"
               className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
-            <button type="submit" className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">
-              إضافة تخصص
-            </button>
+            <Button type="submit" variant="primary" disabled={addingSpecialty}>
+              {addingSpecialty ? 'جارٍ الإضافة…' : 'إضافة تخصص'}
+            </Button>
           </form>
         )}
       </div>

@@ -1,19 +1,7 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import ReviewForm from './ReviewForm';
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'مسودة',
-  submitted: 'طلب جديد',
-  in_review: 'قيد المراجعة',
-  needs_completion: 'بحاجة إلى استكمال',
-  approved: 'معتمد',
-  published: 'منشور',
-  needs_update: 'يحتاج تحديثًا',
-  suspended: 'موقوف',
-  archived: 'مؤرشف',
-  rejected: 'مرفوض',
-};
+import { STATUS_LABELS } from '@/lib/admin-labels';
 
 const REVIEW_ACTION_LABELS: Record<string, string> = {
   approve: 'اعتماد',

@@ -6,6 +6,7 @@ import { addCountry, toggleCountry, addCity, toggleCity } from './actions';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import SettingsTabs from '@/components/SettingsTabs';
 import Toast, { type ToastState } from '@/components/Toast';
+import Button from '@/components/Button';
 
 type Country = { id: string; name_ar: string; iso_code: string | null; is_active: boolean };
 type City = { id: string; name_ar: string; is_active: boolean; countries?: { name_ar: string } | null };
@@ -16,6 +17,8 @@ export default function LocationsPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [countries, setCountries] = useState<Country[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [addingCountry, setAddingCountry] = useState(false);
+  const [addingCity, setAddingCity] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
 
   async function load() {
@@ -83,7 +86,9 @@ export default function LocationsPage() {
           {isAdmin && (
             <form
               action={async (fd) => {
+                setAddingCountry(true);
                 const result = await addCountry(fd);
+                setAddingCountry(false);
                 if (result.error) {
                   setToast({ message: result.error, type: 'error' });
                 } else {
@@ -93,12 +98,12 @@ export default function LocationsPage() {
               }}
               className="mt-3 flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-5"
             >
-              <input name="name_ar" required placeholder="اسم الدولة بالعربية" className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-              <input name="name_en" placeholder="بالإنجليزية (اختياري)" className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-              <input name="iso_code" placeholder="رمز ISO (اختياري)" className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-              <button type="submit" className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">
-                إضافة دولة
-              </button>
+              <input name="name_ar" required placeholder="اسم الدولة بالعربية" aria-label="اسم الدولة بالعربية" className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <input name="name_en" placeholder="بالإنجليزية (اختياري)" aria-label="اسم الدولة بالإنجليزية (اختياري)" className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <input name="iso_code" placeholder="رمز ISO (اختياري)" aria-label="رمز ISO (اختياري)" className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <Button type="submit" variant="primary" disabled={addingCountry}>
+                {addingCountry ? 'جارٍ الإضافة…' : 'إضافة دولة'}
+              </Button>
             </form>
           )}
         </div>
@@ -133,7 +138,9 @@ export default function LocationsPage() {
           {isAdmin && (
             <form
               action={async (fd) => {
+                setAddingCity(true);
                 const result = await addCity(fd);
+                setAddingCity(false);
                 if (result.error) {
                   setToast({ message: result.error, type: 'error' });
                 } else {
@@ -143,7 +150,7 @@ export default function LocationsPage() {
               }}
               className="mt-3 flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-5"
             >
-              <select name="country_id" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <select name="country_id" required aria-label="الدولة" className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
                 <option value="">اختر الدولة</option>
                 {countries.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -151,10 +158,10 @@ export default function LocationsPage() {
                   </option>
                 ))}
               </select>
-              <input name="name_ar" required placeholder="اسم المدينة" className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-              <button type="submit" className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">
-                إضافة مدينة
-              </button>
+              <input name="name_ar" required placeholder="اسم المدينة" aria-label="اسم المدينة" className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <Button type="submit" variant="primary" disabled={addingCity}>
+                {addingCity ? 'جارٍ الإضافة…' : 'إضافة مدينة'}
+              </Button>
             </form>
           )}
         </div>

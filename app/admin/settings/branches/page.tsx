@@ -6,6 +6,7 @@ import { addBranch, renameBranch, toggleBranch } from './actions';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import SettingsTabs from '@/components/SettingsTabs';
 import Toast, { type ToastState } from '@/components/Toast';
+import Button from '@/components/Button';
 
 type Branch = { id: string; name: string; is_active: boolean };
 
@@ -15,6 +16,7 @@ export default function BranchesPage() {
   const supabase = createClient();
   const [isAdmin, setIsAdmin] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [adding, setAdding] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
 
   async function load() {
@@ -97,7 +99,9 @@ export default function BranchesPage() {
         {isAdmin && (
           <form
             action={async (fd) => {
+              setAdding(true);
               const result = await addBranch(fd);
+              setAdding(false);
               if (result.error) {
                 setToast({ message: result.error, type: 'error' });
               } else {
@@ -111,11 +115,12 @@ export default function BranchesPage() {
               name="name"
               required
               placeholder="اسم الفرع الجديد"
+              aria-label="اسم الفرع الجديد"
               className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
-            <button type="submit" className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">
-              إضافة فرع
-            </button>
+            <Button type="submit" variant="primary" disabled={adding}>
+              {adding ? 'جارٍ الإضافة…' : 'إضافة فرع'}
+            </Button>
           </form>
         )}
       </div>

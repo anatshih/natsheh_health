@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { approveChangeRequest, rejectChangeRequest } from './actions';
 import Toast, { type ToastState } from '@/components/Toast';
+import Button from '@/components/Button';
 
 const FIELD_LABELS: Record<string, string> = {
   display_name: 'الاسم الظاهر للعامة',
@@ -160,20 +161,12 @@ export default function ChangeRequestsPage() {
 
             {isAdmin && (
               <div className="flex gap-2">
-                <button
-                  onClick={() => handleApprove(r)}
-                  disabled={busyId === r.id}
-                  className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
-                >
+                <Button variant="primary" onClick={() => handleApprove(r)} disabled={busyId === r.id}>
                   {busyId === r.id ? 'جارٍ التنفيذ…' : 'اعتماد التعديل'}
-                </button>
-                <button
-                  onClick={() => handleReject(r)}
-                  disabled={busyId === r.id}
-                  className="rounded-lg border border-red-300 px-4 py-2 text-xs font-semibold text-red-700 disabled:opacity-60"
-                >
+                </Button>
+                <Button variant="danger" onClick={() => handleReject(r)} disabled={busyId === r.id}>
                   رفض
-                </button>
+                </Button>
               </div>
             )}
           </div>

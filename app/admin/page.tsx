@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import RegistrantsList from './RegistrantsList';
+import { STATUS_LABELS } from '@/lib/admin-labels';
 
 const STATUS_ORDER = [
   'draft',
@@ -13,18 +14,6 @@ const STATUS_ORDER = [
   'suspended',
   'rejected',
 ];
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'مسودة',
-  submitted: 'طلب جديد',
-  in_review: 'قيد المراجعة',
-  needs_completion: 'بحاجة إلى استكمال',
-  approved: 'معتمد',
-  published: 'منشور',
-  needs_update: 'يحتاج تحديثًا',
-  suspended: 'موقوف',
-  rejected: 'مرفوض',
-};
 
 // حدود ملوّنة تعكس دلالة كل حالة، بنفس نظام ألوان شارات القائمة أسفلها
 // (RegistrantsList.tsx) للاتساق البصري.

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { reviewApplication } from '../actions';
 import Toast, { type ToastState } from '@/components/Toast';
+import Button from '@/components/Button';
 
 // نموذج قرار المراجعة كجزيرة عميل مستقلة داخل صفحة تفاصيل الطلب (Server
 // Component ثقيلة بجلبات بيانات متعددة) — بدل تحويل الصفحة كاملة لمكوّن
@@ -54,70 +55,46 @@ export default function ReviewForm({
         />
       </div>
       <div className="flex flex-wrap gap-2">
-        <ActionButton
-          label="اعتماد"
+        <Button
+          type="button"
+          variant="secondary"
           disabled={!canDecide || busy}
-          busy={busyAction === 'approve'}
           onClick={() => handleAction('approve', `هل تريد اعتماد طلب "${name}"؟`)}
-        />
-        <ActionButton
-          label="اعتماد ونشر"
-          primary
+        >
+          {busyAction === 'approve' ? 'جارٍ التنفيذ…' : 'اعتماد'}
+        </Button>
+        <Button
+          type="button"
+          variant="primary"
           disabled={!canDecide || busy}
-          busy={busyAction === 'approve_publish'}
           onClick={() =>
             handleAction(
               'approve_publish',
               `هل تريد اعتماد ونشر طلب "${name}"؟ سيظهر ملفه فورًا في الدليل العام.`
             )
           }
-        />
-        <ActionButton
-          label="طلب استكمال"
+        >
+          {busyAction === 'approve_publish' ? 'جارٍ التنفيذ…' : 'اعتماد ونشر'}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
           disabled={!canDecide || busy}
-          busy={busyAction === 'request_completion'}
           onClick={() => handleAction('request_completion')}
-        />
-        <ActionButton
-          label="رفض"
-          danger
+        >
+          {busyAction === 'request_completion' ? 'جارٍ التنفيذ…' : 'طلب استكمال'}
+        </Button>
+        <Button
+          type="button"
+          variant="danger"
           disabled={!canDecide || busy}
-          busy={busyAction === 'reject'}
           onClick={() => handleAction('reject', `هل تريد رفض طلب "${name}"؟`)}
-        />
+        >
+          {busyAction === 'reject' ? 'جارٍ التنفيذ…' : 'رفض'}
+        </Button>
       </div>
 
       <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>
-  );
-}
-
-function ActionButton({
-  label,
-  primary,
-  danger,
-  disabled,
-  busy,
-  onClick,
-}: {
-  label: string;
-  primary?: boolean;
-  danger?: boolean;
-  disabled?: boolean;
-  busy?: boolean;
-  onClick: () => void;
-}) {
-  const className = `rounded-lg px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${
-    primary
-      ? 'bg-primary text-white'
-      : danger
-        ? 'border border-red-300 text-red-700'
-        : 'border border-slate-300 text-slate-700'
-  }`;
-
-  return (
-    <button type="button" onClick={onClick} disabled={disabled} className={className}>
-      {busy ? 'جارٍ التنفيذ…' : label}
-    </button>
   );
 }

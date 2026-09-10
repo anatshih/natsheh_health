@@ -1,4 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
+import { STATUS_LABELS, ALL_STATUSES } from '@/lib/admin-labels';
+
+export { STATUS_LABELS, ALL_STATUSES };
 
 export type ReportScope = 'all' | 'approved' | 'published';
 
@@ -134,21 +137,6 @@ export type ReportData = Awaited<ReturnType<typeof loadReportData>>;
 // "التقارير" (بيانات تفصيلية قابلة للتصفية بمعايير متعددة الاختيار)، بخلاف
 // "الإحصائيات" أعلاه (أعداد مجمّعة فقط). راجع app/admin/reports/page.tsx.
 // ----------------------------------------------------------------------------
-
-export const STATUS_LABELS: Record<string, string> = {
-  draft: 'مسودة',
-  submitted: 'طلب جديد',
-  in_review: 'قيد المراجعة',
-  needs_completion: 'بحاجة إلى استكمال',
-  approved: 'معتمد',
-  published: 'منشور',
-  needs_update: 'يحتاج تحديثًا',
-  suspended: 'موقوف',
-  archived: 'مؤرشف',
-  rejected: 'مرفوض',
-};
-
-export const ALL_STATUSES = Object.keys(STATUS_LABELS);
 
 export const WILLINGNESS_LABELS: Record<string, string> = {
   yes: 'نعم',

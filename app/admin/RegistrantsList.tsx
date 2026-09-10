@@ -7,23 +7,9 @@ import { createClient } from '@/lib/supabase/client';
 import { suspendAccount, reactivateAccount, adminDeleteAccount, publishAccount } from './actions';
 import Toast, { type ToastState } from '@/components/Toast';
 import Pagination from '@/components/Pagination';
+import { STATUS_LABELS } from '@/lib/admin-labels';
 
 const PAGE_SIZE = 20;
-
-// نسخة محلية من تسميات الحالات (بدل الاستيراد من lib/reports.ts) لأن ذلك
-// الملف يستورد عميل Supabase الخاص بالخادم (next/headers)، وهذا مكوّن عميل.
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'مسودة',
-  submitted: 'طلب جديد',
-  in_review: 'قيد المراجعة',
-  needs_completion: 'بحاجة إلى استكمال',
-  approved: 'معتمد',
-  published: 'منشور',
-  needs_update: 'يحتاج تحديثًا',
-  suspended: 'موقوف',
-  archived: 'مؤرشف',
-  rejected: 'مرفوض',
-};
 
 type Row = {
   id: string;
@@ -188,6 +174,7 @@ export default function RegistrantsList() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="ابحث بالاسم…"
+          aria-label="ابحث بالاسم"
           className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
       </div>

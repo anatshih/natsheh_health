@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { loadDetailedRecords, parseReportFilters, STATUS_LABELS, ALL_STATUSES } from '@/lib/reports';
 import AdminSectionTabs from '@/components/AdminSectionTabs';
 import Pagination from '@/components/Pagination';
+import Button from '@/components/Button';
 
 const PAGE_SIZE = 30;
 
@@ -49,6 +50,7 @@ export default async function ReportsPage({
           name="q"
           defaultValue={filters.q}
           placeholder="ابحث بالاسم أو رقم الهوية…"
+          aria-label="ابحث بالاسم أو رقم الهوية"
           className="mb-5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
         <div className="grid gap-5 sm:grid-cols-4">
@@ -78,12 +80,9 @@ export default async function ReportsPage({
           />
         </div>
         <div className="mt-4 flex gap-2">
-          <button
-            type="submit"
-            className="rounded-lg bg-primary px-5 py-2 text-xs font-semibold text-white hover:bg-primary-dark"
-          >
+          <Button type="submit" variant="primary">
             تطبيق الفلاتر
-          </button>
+          </Button>
           <a
             href="/admin/reports"
             className="rounded-lg border border-slate-300 px-5 py-2 text-xs font-semibold text-slate-600 hover:border-primary hover:text-primary"

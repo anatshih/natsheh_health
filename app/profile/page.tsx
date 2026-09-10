@@ -7,19 +7,7 @@ import LogoutButton from '@/components/LogoutButton';
 import PhotoUpload from '@/components/PhotoUpload';
 import { updateProfile, updatePrivacyPreferences, requestAccountDeletion } from './actions';
 import { WORKPLACE_TYPES } from '@/lib/workplaceTypes';
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'مسودة',
-  submitted: 'طلب جديد',
-  in_review: 'قيد المراجعة',
-  needs_completion: 'بحاجة إلى استكمال',
-  approved: 'معتمد',
-  published: 'منشور',
-  needs_update: 'يحتاج تحديثًا',
-  suspended: 'موقوف',
-  archived: 'مؤرشف',
-  rejected: 'مرفوض',
-};
+import { STATUS_LABELS } from '@/lib/admin-labels';
 
 type Lookup = { id: string; name?: string; name_ar?: string; country_id?: string; category_id?: string; parent_id?: string | null };
 

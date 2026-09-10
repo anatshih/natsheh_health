@@ -146,31 +146,43 @@ export default function UsersPage() {
             action={handleCreate}
             className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5"
           >
-            <select name="role" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
-              <option value="reviewer">مراجع — صلاحية مراجعة فقط</option>
-              <option value="admin">مدير نظام — صلاحية كاملة</option>
-            </select>
-            <input
-              name="name"
-              required
-              placeholder="الاسم"
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-            <input
-              name="email"
-              type="email"
-              required
-              placeholder="اسم المستخدم (بريد إلكتروني)"
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-            <input
-              name="password"
-              type="text"
-              required
-              minLength={8}
-              placeholder="كلمة المرور (8 أحرف على الأقل)"
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-700">الصلاحية</label>
+              <select name="role" required className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                <option value="reviewer">مراجع — صلاحية مراجعة فقط</option>
+                <option value="admin">مدير نظام — صلاحية كاملة</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-700">الاسم</label>
+              <input
+                name="name"
+                required
+                placeholder="الاسم"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-700">اسم المستخدم (بريد إلكتروني)</label>
+              <input
+                name="email"
+                type="email"
+                required
+                placeholder="اسم المستخدم (بريد إلكتروني)"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-700">كلمة المرور</label>
+              <input
+                name="password"
+                type="text"
+                required
+                minLength={8}
+                placeholder="كلمة المرور (8 أحرف على الأقل)"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+            </div>
 
             {error && <p className="text-xs text-red-600">{error}</p>}
 

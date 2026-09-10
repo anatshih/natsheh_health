@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { resolvePasswordReset, rejectPasswordReset } from './actions';
 import Toast, { type ToastState } from '@/components/Toast';
+import Button from '@/components/Button';
 
 type Request = {
   id: string;
@@ -151,20 +152,12 @@ export default function PasswordResetsPage() {
               ) : (
                 isAdmin && (
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => handleResolve(r)}
-                      disabled={busyId === r.id}
-                      className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
-                    >
+                    <Button variant="primary" onClick={() => handleResolve(r)} disabled={busyId === r.id}>
                       {busyId === r.id ? 'جارٍ التفعيل…' : 'تفعيل كلمة مرور جديدة'}
-                    </button>
-                    <button
-                      onClick={() => handleReject(r)}
-                      disabled={busyId === r.id}
-                      className="rounded-lg border border-red-300 px-4 py-2 text-xs font-semibold text-red-700 disabled:opacity-60"
-                    >
+                    </Button>
+                    <Button variant="danger" onClick={() => handleReject(r)} disabled={busyId === r.id}>
                       رفض الطلب
-                    </button>
+                    </Button>
                   </div>
                 )
               )}

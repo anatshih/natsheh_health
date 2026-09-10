@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { confirmAccountDeletion, rejectAccountDeletion } from './actions';
 import Toast, { type ToastState } from '@/components/Toast';
+import Button from '@/components/Button';
 
 type Request = {
   id: string;
@@ -147,20 +148,12 @@ export default function DeletionRequestsPage() {
 
               {isAdmin && (
                 <div className="flex flex-col gap-2 sm:flex-row">
-                  <button
-                    onClick={() => handleReject(r)}
-                    disabled={busyId === r.id}
-                    className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
-                  >
+                  <Button variant="primary" onClick={() => handleReject(r)} disabled={busyId === r.id}>
                     رفض واستعادة الحساب
-                  </button>
-                  <button
-                    onClick={() => handleConfirm(r)}
-                    disabled={busyId === r.id}
-                    className="rounded-lg border border-red-300 px-4 py-2 text-xs font-semibold text-red-700 disabled:opacity-60"
-                  >
+                  </Button>
+                  <Button variant="danger" onClick={() => handleConfirm(r)} disabled={busyId === r.id}>
                     {busyId === r.id ? 'جارٍ الحذف…' : 'حذف نهائي بعد التحقق'}
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

@@ -1,12 +1,8 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import Pagination from '@/components/Pagination';
-
-const STATUS_LABELS: Record<string, string> = {
-  submitted: 'طلب جديد',
-  in_review: 'قيد المراجعة',
-  needs_completion: 'بحاجة إلى استكمال',
-};
+import Button from '@/components/Button';
+import { STATUS_LABELS } from '@/lib/admin-labels';
 
 const PAGE_SIZE = 20;
 
@@ -49,14 +45,12 @@ export default async function ApplicationsListPage({
           name="q"
           defaultValue={q}
           placeholder="ابحث بالاسم…"
+          aria-label="ابحث بالاسم"
           className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
-        <button
-          type="submit"
-          className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-primary hover:text-primary"
-        >
+        <Button type="submit" variant="secondary">
           بحث
-        </button>
+        </Button>
       </form>
 
       {filteredRows.length === 0 && (
