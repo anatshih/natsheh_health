@@ -14,16 +14,15 @@ export default async function HomePage() {
     <main className="relative overflow-hidden">
       <TatreezBackground />
       <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-7 px-6 py-20 text-center">
-        <p className="text-sm font-bold text-primary">مجلس عائلة النتشة – الخليل، فلسطين</p>
+        <p className="text-sm font-bold text-primary">مجلس عائلة النتشة — الخليل، فلسطين</p>
 
         <h1 className="text-balance font-display text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
-          كفاءات نفتخر بها… يجمعها دليل واحد
+          كفاءات نفتخر بها، في مكان واحد
         </h1>
 
         <p className="max-w-xl text-base leading-8 text-slate-600">
-          هل تبحث عن طبيب، أو ممرض، أو صيدلاني، أو أي كفاءة صحية من أبناء وبنات
-          عائلة النتشة؟ يتيح لك الدليل التعرّف إلى تخصصاتهم وخبراتهم وأماكن
-          وجودهم داخل فلسطين وخارجها، ويسهّل الوصول إليهم والتواصل معهم.
+          هل تبحث عن طبيب أو ممرضة أو أي كفاءة صحية من عائلة النتشة؟ تعرّف هنا
+          إلى كفاءات أبناء وبنات العائلة، وتخصصاتهم وخبراتهم وأماكن وجودهم.
         </p>
 
         <p className="max-w-xl text-base leading-8 text-slate-600">
