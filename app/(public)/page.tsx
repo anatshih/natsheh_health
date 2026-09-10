@@ -1,78 +1,102 @@
 import Link from 'next/link';
 import WhatsAppShareButton from '@/components/WhatsAppShareButton';
 import FacebookShareButton from '@/components/FacebookShareButton';
+import AnimatedNumber from '@/components/AnimatedNumber';
+import { loadDirectoryStats } from '@/lib/directoryStats';
 
-export default function HomePage() {
+// الصفحة الرئيسية: بوابة سريعة (قيمة + دعوة للفعل خلال ثوانٍ) — بخلاف صفحة
+// "عن الدليل" التي تحمل الشرح الكامل. كانت الصفحتان تتطابقان في النص تقريبًا
+// حرفيًا؛ نُقل كل الشرح المطوّل إلى about/page.tsx فقط لتفادي التكرار.
+export default async function HomePage() {
+  const stats = await loadDirectoryStats();
+
   return (
-    <main className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-6 py-20 text-center">
-      <div className="flex items-center justify-center gap-3">
-        <img src="/logo.png" alt="شعار مجلس عائلة النتشة" className="h-12 w-auto" />
-        <p className="text-lg font-bold text-primary sm:text-xl">
-          مجلس عائلة النتشة — الخليل، فلسطين
-        </p>
-      </div>
-      <h1 className="text-3xl font-extrabold leading-snug text-slate-900 sm:text-4xl">
-        دليل الكفاءات الصحية لعائلة النتشة
-      </h1>
+    <main className="relative overflow-hidden">
+      <TatreezBackground />
+      <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-7 px-6 py-20 text-center">
+        <p className="text-sm font-bold text-primary">مجلس عائلة النتشة — الخليل، فلسطين</p>
 
-      <div className="max-w-2xl space-y-4 text-right text-base leading-8 text-slate-600">
-        <p className="text-lg font-bold text-slate-800">
-          كفاءات نفتخر بها، وخبرات نجمعها، وعطاء يمتد لخدمة العائلة والمجتمع.
-        </p>
-        <p>
-          يجمع هذا الدليل أبناء وبنات عائلة النتشة العاملين والمتخصصين في
-          القطاع الصحي داخل فلسطين وخارجها، في منصة موثوقة ومنظمة تعرّف بخبراتهم
-          وتخصصاتهم وأماكن وجودهم، وتقرّب المسافات بين أبناء العائلة أينما كانوا.
-        </p>
-        <p>
-          نطمح من خلال الدليل إلى التعرف بصورة أفضل إلى الكفاءات الصحية في
-          العائلة، وتعزيز التواصل والتعاون بينها، وتسهيل الوصول إلى أصحاب
-          الاختصاص، والاستفادة من خبراتهم في دعم أبناء العائلة، وتطوير المبادرات
-          والخدمات الصحية، والمساهمة في خدمة المجتمع.
-        </p>
-        <p>
-          كما يشكل الدليل أساسًا للتخطيط المستقبلي الذي يسهم في{' '}
-          <strong className="font-bold text-slate-800">
-            تنمية وتطوير الكوادر الصحية في العائلة، كلٌّ في مجال تخصصه
-          </strong>
-          ، من خلال التعرف إلى الخبرات المتاحة، واحتياجات التطوير، وفرص التدريب
-          والتعاون وتبادل المعرفة، بما يعزز قدرات الكفاءات الصحية ويرفع من أثرها
-          في خدمة العائلة والمجتمع.
-        </p>
-        <p className="font-bold text-slate-800">
-          وجودك في الدليل يثري هذه المنظومة؛ سجّل بياناتك وكن جزءًا من شبكة تجمع
-          كفاءات عائلة النتشة الصحية، وتدعم تطورها وعطاءها لخدمة العائلة والمجتمع.{' '}
-          <strong className="font-extrabold text-slate-900">
-            بإشراف مجلس عائلة النتشة ومجلس النقباء – الخليل، فلسطين.
-          </strong>
-        </p>
-      </div>
+        <h1 className="text-balance font-display text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
+          كفاءات نفتخر بها، في مكان واحد
+        </h1>
 
-      <div className="flex flex-wrap justify-center gap-3">
-        <Link
-          href="/directory"
-          className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-dark"
-        >
-          تصفّح دليل الكفاءات
+        <p className="max-w-xl text-base leading-8 text-slate-600">
+          تبحث عن طبيب أو ممرضة أو أي كفاءة صحية من عائلة النتشة؟ ستجدهم هنا موثّقين
+          بتخصصاتهم. وإن كنت أنت الكفاءة الصحية، سجّل بياناتك لتكون في متناول أهلك.
+        </p>
+
+        <div className="flex flex-wrap justify-center gap-3">
+          <Link
+            href="/directory"
+            className="rounded-lg bg-primary px-7 py-3 text-sm font-semibold text-white hover:bg-primary-dark"
+          >
+            تصفّح دليل الكفاءات
+          </Link>
+          <Link
+            href="/join"
+            className="rounded-lg border border-slate-300 px-7 py-3 text-sm font-semibold text-slate-700 hover:border-primary hover:text-primary"
+          >
+            انضمام كفاءة صحية جديدة
+          </Link>
+        </div>
+
+        <div className="mt-2 flex gap-10">
+          <Stat value={stats.totalCount} label="كفاءة موثّقة" />
+          <Stat value={stats.specialtyCount} label="تخصصًا" />
+          <Stat value={stats.countryCount} label="دولة" />
+        </div>
+
+        <Link href="/about" className="text-xs font-semibold text-primary hover:underline">
+          اقرأ المزيد عن الدليل ›
         </Link>
-        <Link
-          href="/join"
-          className="rounded-lg border border-primary px-6 py-3 text-sm font-semibold text-primary hover:bg-primary-soft"
-        >
-          انضمام كفاءة صحية جديدة
-        </Link>
-      </div>
 
-      <div className="mt-2 flex flex-wrap justify-center gap-3">
-        <WhatsAppShareButton
-          text="دليل الكفاءات الصحية لعائلة النتشة — تصفّح الأطباء والكفاءات الصحية في العائلة:"
-          className="flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:border-primary hover:text-primary"
-        />
-        <FacebookShareButton
-          quote="دليل الكفاءات الصحية لعائلة النتشة — تصفّح الأطباء والكفاءات الصحية في العائلة:"
-          className="flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:border-primary hover:text-primary"
-        />
+        <div className="mt-4 flex flex-wrap justify-center gap-3">
+          <WhatsAppShareButton
+            text="دليل الكفاءات الصحية لعائلة النتشة — تصفّح الكفاءات الصحية في العائلة:"
+            className="flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:border-primary hover:text-primary"
+          />
+          <FacebookShareButton
+            quote="دليل الكفاءات الصحية لعائلة النتشة — تصفّح الكفاءات الصحية في العائلة:"
+            className="flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:border-primary hover:text-primary"
+          />
+        </div>
       </div>
     </main>
+  );
+}
+
+function Stat({ value, label }: { value: number; label: string }) {
+  return (
+    <div>
+      <p className="font-display text-3xl font-bold text-accent">
+        <AnimatedNumber value={value} />
+      </p>
+      <p className="text-[11px] text-slate-500">{label}</p>
+    </div>
+  );
+}
+
+// نمط زخرفي خفيف مستوحى من التطريز الخليلي (الغرزة الصليبية) — بديل عن خلفية
+// بيضاء مسطحة بالكامل، بشفافية منخفضة جدًا لئلا يزاحم النص.
+function TatreezBackground() {
+  return (
+    <svg
+      className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[460px] w-full"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+    >
+      <defs>
+        <pattern id="tatreez-home" width="44" height="44" patternUnits="userSpaceOnUse">
+          <path d="M22 3 L41 22 L22 41 L3 22 Z" fill="none" stroke="#A8324A" strokeWidth="1" />
+          <circle cx="22" cy="22" r="2.5" fill="#005CB6" />
+        </pattern>
+        <linearGradient id="hero-fade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#EAF2FC" />
+          <stop offset="100%" stopColor="#EAF2FC" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#hero-fade)" />
+      <rect width="100%" height="100%" fill="url(#tatreez-home)" opacity="0.09" />
+    </svg>
   );
 }

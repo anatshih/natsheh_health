@@ -1,11 +1,20 @@
 import type { Metadata } from 'next';
-import { Cairo, IBM_Plex_Sans_Arabic } from 'next/font/google';
+import { Cairo, El_Messiri, IBM_Plex_Sans_Arabic } from 'next/font/google';
 import './globals.css';
 
 const cairo = Cairo({
   subsets: ['arabic'],
   weight: ['600', '700', '800'],
   variable: '--font-cairo',
+});
+
+// خط عرض دافئ للعناوين الكبيرة المختارة فقط (الصفحة الرئيسية، صفحة الدليل،
+// الملف الشخصي) — بديل عن Cairo الشائع جدًا في المواقع المؤسسية العربية،
+// بلا أي أثر على بقية العناوين في الموقع (لوحة الإدارة تبقى بخط Cairo).
+const messiri = El_Messiri({
+  subsets: ['arabic'],
+  weight: ['600', '700'],
+  variable: '--font-messiri',
 });
 
 const plexArabic = IBM_Plex_Sans_Arabic({
@@ -33,7 +42,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={`${cairo.variable} ${plexArabic.variable}`}>
+    <html lang="ar" dir="rtl" className={`${cairo.variable} ${messiri.variable} ${plexArabic.variable}`}>
       <body className="min-h-screen bg-slate-50 font-body text-slate-900 antialiased">
         {children}
       </body>

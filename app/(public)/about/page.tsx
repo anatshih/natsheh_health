@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function AboutPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="mb-2 text-2xl font-extrabold text-slate-900">عن الدليل</h1>
+      <h1 className="mb-2 font-display text-2xl font-bold text-slate-900">عن الدليل</h1>
       <p className="mb-10 text-sm font-semibold text-primary">
         مجلس عائلة النتشة — الخليل، فلسطين
       </p>

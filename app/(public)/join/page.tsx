@@ -365,7 +365,7 @@ export default function JoinPage() {
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="mb-1 text-2xl font-extrabold">طلب انضمام إلى الدليل</h1>
+      <h1 className="mb-1 font-display text-2xl font-bold">طلب انضمام إلى الدليل</h1>
       <p className="mb-8 text-sm text-slate-600">دليل الكفاءات الصحية — عائلة النتشة</p>
 
       <ol className="mb-10 flex gap-2 text-xs font-semibold text-slate-400">

@@ -5,20 +5,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // مأخوذة من الشعار الرسمي لمجلس عائلة النتشة (القسم 49.1 من وثيقة المتطلبات)
+        // الأزرق مأخوذ من الشعار الرسمي لمجلس عائلة النتشة (القسم 49.1). أحمر
+        // التطريز والزيتوني أُضيفا لاحقًا كهوية بصرية مستوحاة من التطريز الخليلي
+        // وشجرة الزيتون الفلسطينية، بدل الاعتماد الكامل على الأزرق وحده.
         primary: {
           DEFAULT: '#005CB6',
           dark: '#00417F',
           soft: '#E4EEFB',
         },
         accent: {
-          DEFAULT: '#B4842A',
-          soft: '#F5EBD8',
+          DEFAULT: '#A8324A',
+          dark: '#7E2438',
+          soft: '#F5E3E7',
+        },
+        olive: {
+          DEFAULT: '#6E7B3D',
+          dark: '#57612F',
+          soft: '#EEF0E1',
         },
         verified: '#1F8A5F',
       },
       fontFamily: {
         heading: ['var(--font-cairo)', 'Tahoma', 'sans-serif'],
+        display: ['var(--font-messiri)', 'var(--font-cairo)', 'Tahoma', 'sans-serif'],
         body: ['var(--font-plex-arabic)', 'Tahoma', 'sans-serif'],
       },
     },

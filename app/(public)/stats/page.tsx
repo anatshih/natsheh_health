@@ -10,7 +10,7 @@ export default async function StatsPage() {
     <main className="mx-auto max-w-4xl px-6 py-12">
       <div className="mb-10 text-center">
         <p className="mb-2 text-sm font-semibold text-primary">مجلس عائلة النتشة — الخليل، فلسطين</p>
-        <h1 className="mb-3 text-3xl font-extrabold">الكفاءات الصحية بالأرقام</h1>
+        <h1 className="mb-3 font-display text-3xl font-bold">الكفاءات الصحية بالأرقام</h1>
         <p className="mx-auto max-w-xl text-sm leading-7 text-slate-600">
           نظرة عامة على الكفاءات الصحية المعتمدة والمنشورة من أبناء وبنات عائلة النتشة
           في الوطن والمهجر. لا تعرض هذه الصفحة أي بيانات شخصية.
@@ -53,7 +53,7 @@ export default async function StatsPage() {
 function BigStat({ value, label }: { value: number; label: string }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white py-6 text-center">
-      <p className="font-heading text-3xl font-extrabold text-primary">
+      <p className="font-display text-3xl font-bold text-primary">
         <AnimatedNumber value={value} />
       </p>
       <p className="mt-1 text-xs text-slate-500">{label}</p>

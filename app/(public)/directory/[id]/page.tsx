@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import DirectoryAvatar from '@/components/DirectoryAvatar';
-import VerifiedBadge from '@/components/VerifiedBadge';
 import RevealField from '@/components/RevealField';
+import { specialtyColor } from '@/lib/specialtyColors';
 import WhatsAppShareButton from '@/components/WhatsAppShareButton';
 import FacebookShareButton from '@/components/FacebookShareButton';
 
@@ -64,7 +64,7 @@ export default async function DirectoryProfilePage({
   const { data: related } = person.specialty
     ? await supabase
         .from('directory_public')
-        .select('profile_id, display_name, photo_url, specialty, residence_city, residence_country')
+        .select('profile_id, display_name, photo_url, specialty, specialty_category, residence_city, residence_country')
         .eq('specialty', person.specialty)
         .neq('profile_id', id)
         .limit(4)
@@ -94,17 +94,27 @@ export default async function DirectoryProfilePage({
 
       <div className="rounded-2xl border border-slate-200 bg-white p-6">
         <div className="flex items-start gap-4">
-          <DirectoryAvatar photoUrl={person.photo_url} name={person.display_name} size={80} />
+          <DirectoryAvatar
+            photoUrl={person.photo_url}
+            name={person.display_name}
+            category={person.specialty_category}
+            size={80}
+          />
           <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-extrabold">{person.display_name}</h1>
-              <VerifiedBadge />
-            </div>
-            <p className="mt-1 text-sm text-slate-600">
-              {[person.specialty_category, person.specialty, person.sub_specialty]
-                .filter(Boolean)
-                .join(' — ')}
-            </p>
+            <h1 className="font-display text-xl font-bold">{person.display_name}</h1>
+            {person.specialty && (
+              <span
+                className="mt-1.5 inline-block w-fit rounded-full px-3 py-1 text-xs font-semibold"
+                style={{
+                  background: specialtyColor(person.specialty_category).soft,
+                  color: specialtyColor(person.specialty_category).text,
+                }}
+              >
+                {[person.specialty_category, person.specialty, person.sub_specialty]
+                  .filter(Boolean)
+                  .join(' — ')}
+              </span>
+            )}
             {(person.residence_city || person.residence_country) && (
               <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
                 <PinIcon />
@@ -171,7 +181,12 @@ export default async function DirectoryProfilePage({
                 href={`/directory/${r.profile_id}`}
                 className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 hover:border-primary"
               >
-                <DirectoryAvatar photoUrl={r.photo_url} name={r.display_name} size={40} />
+                <DirectoryAvatar
+                  photoUrl={r.photo_url}
+                  name={r.display_name}
+                  category={r.specialty_category}
+                  size={40}
+                />
                 <div>
                   <p className="text-sm font-semibold">{r.display_name}</p>
                   <p className="text-xs text-slate-500">
