@@ -224,28 +224,32 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
                         aria-hidden="true"
                       />
 
-                      {isNew(row.last_updated_at) && (
-                        <span className="absolute left-4 top-4 rounded-full bg-accent-soft px-2.5 py-1 text-[10px] font-bold text-accent">
-                          انضم حديثًا
-                        </span>
-                      )}
-
-                      <div className="flex items-center gap-3">
-                        <DirectoryAvatar
-                          photoUrl={row.photo_url}
-                          name={row.display_name}
-                          category={row.specialty_category}
-                          size={52}
-                        />
-                        <div>
-                          <h2 className="font-heading text-base font-bold">{row.display_name}</h2>
-                          {(row.residence_city || row.residence_country) && (
-                            <p className="flex items-center gap-1 text-xs text-slate-500">
-                              <PinIcon />
-                              {[row.residence_city, row.residence_country].filter(Boolean).join('، ')}
-                            </p>
-                          )}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <DirectoryAvatar
+                            photoUrl={row.photo_url}
+                            name={row.display_name}
+                            category={row.specialty_category}
+                            size={52}
+                          />
+                          <div className="min-w-0">
+                            <h2 className="truncate font-heading text-base font-bold">{row.display_name}</h2>
+                            {(row.residence_city || row.residence_country) && (
+                              <p className="flex items-center gap-1 text-xs text-slate-500">
+                                <PinIcon />
+                                <span className="truncate">
+                                  {[row.residence_city, row.residence_country].filter(Boolean).join('، ')}
+                                </span>
+                              </p>
+                            )}
+                          </div>
                         </div>
+
+                        {isNew(row.last_updated_at) && (
+                          <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-[10px] font-bold text-accent">
+                            انضم حديثًا
+                          </span>
+                        )}
                       </div>
 
                       {row.specialty && (
